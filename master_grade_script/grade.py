@@ -10,13 +10,14 @@ import tempfile
 import traceback
 
 class RetroGrade:
-    base_instructor_dir = "/Users/johnsogg/Projects/retrograde"
+    # base_instructor_dir = "/Users/johnsogg/Projects/retrograde"
     LANG_UNKNOWN = "unknown"
     LANG_JAVA = "java"
     LANG_PYTHON = "py"
     LANG_CPP = "cpp"
 
-    def __init__(self, assignment, student_id, files):
+    def __init__(self, instr_dir, assignment, student_id, files):
+        self.base_assignment_dir = instr_dir
         self.assignment = assignment
         self.student_id = student_id
         self.files = files
@@ -66,10 +67,17 @@ class RetroGrade:
 
     def establish_dirs(self):
         self.working_dir = tempfile.mkdtemp()
-        base_instructor_dir = os.path.join(RetroGrade.base_instructor_dir, self.assignment)
-        self.instructor_dir = os.path.join(base_instructor_dir, self.language)
-        ins_dir_present = os.path.isdir(self.instructor_dir)
-        return ins_dir_present
+        # base_assignment_dir := directory with assignment directories in it
+        #                        e.g. $FOO/homework
+        # base_instructor_dir := dir off assign dir with particular homework
+        #                        e.g. $FOO/homework/linked_list
+        # instructor_dir      := dir off instructor dir with particular language
+        #                        e.g. $FOO/homework/linked_list/cpp
+        self.base_instructor_dir = os.path.join(self.base_assignment_dir, 
+                                                self.assignment)
+        self.instructor_dir = os.path.join(self.base_instructor_dir, self.language)
+        is_ins_dir_present = os.path.isdir(self.instructor_dir)
+        return is_ins_dir_present
 
     def copy_files(self):
         print "About to copy files to working directory: " + self.working_dir
@@ -135,6 +143,8 @@ class RetroGrade:
 
 def start():
     parser = argparse.ArgumentParser()
+    parser.add_argument("instructor_dir",
+                        help="top level directory for instructor assignments")
     parser.add_argument("assignment", 
                         help="specify the homework assignment (e.g. 'linked list')")
     parser.add_argument("student_id", 
@@ -143,8 +153,10 @@ def start():
                         help="specify student input files (e.g. 'linked_list.cpp')",
                         metavar="student_file",
                         nargs="+")
+                        
     args = parser.parse_args()
-    rg = RetroGrade(args.assignment, args.student_id, args.student_file)
+    rg = RetroGrade(args.instructor_dir, args.assignment, 
+                    args.student_id, args.student_file)
 
 
 if __name__ == '__main__':
