@@ -1,8 +1,13 @@
 import os, re, subprocess, sys
 
+
+# keep 
 ASSIGNMENT = "Linked Lists"
+
+# keep 
 LANG = "cpp"
 
+# keep 
 INSTRUCTOR_FILES = [ 
     "Makefile",
     "RetroPrinter.cpp",
@@ -11,10 +16,12 @@ INSTRUCTOR_FILES = [
     "linked_list_test.cpp"
     ]
 
+# keep 
 STUDENT_FILES = [
     "linked_list.cpp"
 ]
 
+# keep 
 POINTS = {
     "Report": 1,
     "InitNode" : 1,
@@ -94,6 +101,7 @@ def get_test_result(line, result):
         # print "You get " + str(score) + " points for " + question_key
 
 def flushall():
+    # is this necessary now that I'm not using separate processes?
     sys.stdout.flush()
     sys.stderr.flush()
 
