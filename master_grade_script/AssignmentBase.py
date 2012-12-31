@@ -4,6 +4,8 @@ class AssignmentBase(object):
     def __init__(self):
         self.assignment = "Unknown Assignment"
         self.lang = "Unknown Language"
+        self.build_command = "echo replace this with your build command string"
+        self.unit_test_command = "echo replace this with your unit test command"
         self.instructor_files = []
         self.student_files = []
         self.points = {}
@@ -36,20 +38,24 @@ class AssignmentBase(object):
 
         if (ok):
             # make linked_list -- need to think about how to extract this
-            ok = self.run(["make"], sys.stdout, sys.stderr)
+            ok = self.run([self.build_command], sys.stdout, sys.stderr)
 
         if (ok):
             # run linked_list_test
             outfileW = open(outfile_name, "w")
-            ok = self.run(["./linked_list_test"], outfileW, sys.stderr)
+            self.run([self.unit_test_command], outfileW, sys.stderr)
             outfileW.close()
             outfile = open(outfile_name, "r")
-            result = self.parse_for_grade(outfile) # dictionary of question = score
-            print "Got results dictionary: " + str(result)
+            result = self.parse_for_grade(outfile)
+
         if len(result) > 0:
             self.print_results(result)
-
-        return ok
+        else:
+            ok = False
+        joined = os.path.join('.', outfile_name)
+        final_path = os.path.abspath(joined)
+        print "Output is in the file: " + final_path
+        return (ok, result, final_path)
 
     def parse_for_grade(self, outfile):
         print "Parsing outfile..."
@@ -76,7 +82,7 @@ class AssignmentBase(object):
                     print ""
                     print "       Here's the list of " + str(len(self.points)) + " known questions:"
                     print "\n       ".join(self.points.keys())
-            result[question_key] = score
+            result[question_key] = (score, self.points[question_key])
             # print "You get " + str(score) + " points for " + question_key
 
     def flushall(self):
@@ -96,14 +102,16 @@ class AssignmentBase(object):
         print "Printing results..."
         labelf = "{:>30} : "
         numf = "{:>3}"
-        sep = "   /   "
+        sep = "   / "
         total_score = 0
+        total_possible_score = 0
         for k in results.keys():
-            total_score = total_score + results[k]
-            p = str(results[k])
-            max_possible = str(self.points[k])
+            total_score = total_score + results[k][0]
+            p = str(results[k][0])
+            max_possible = str(results[k][1])
+            total_possible_score = total_possible_score + results[k][1]
             print(labelf.format(k) + numf.format(p) + sep + numf.format(max_possible))
-        print("\n" + labelf.format("TOTAL") + numf.format(total_score) + sep + numf.format(self.get_total_points()) + "\n")
+        print("\n" + labelf.format("TOTAL") + numf.format(total_score) + sep + numf.format(total_possible_score) + "\n")
 
 class ExampleAssignment(AssignmentBase):
     def __init__(self):

@@ -10,13 +10,15 @@ import tempfile
 import traceback
 
 class RetroGrade:
-    # base_instructor_dir = "/Users/johnsogg/Projects/retrograde"
     LANG_UNKNOWN = "unknown"
     LANG_JAVA = "java"
     LANG_PYTHON = "py"
     LANG_CPP = "cpp"
 
     def __init__(self, instr_dir, assignment, student_id, files):
+        self.test_ok = False
+        self.result_map = {}
+        self.output_path = ""
         self.base_assignment_dir = instr_dir
         self.assignment = assignment
         self.student_id = student_id
@@ -31,11 +33,10 @@ class RetroGrade:
         if (ok):
             ok = self.copy_files()
         if (ok):
-            ok = self.invoke_grade_script()
-        if (ok):
-            print "Output is in the following file:"
-            print self.grade_script_output_file_path
-            print open(self.grade_script_output_file_path).read()
+            ok_result_tuple = self.invoke_grade_script()
+            self.test_ok = ok_result_tuple[0]
+            self.result_map = ok_result_tuple[1]
+            self.output_path = ok_result_tuple[2]
 
     def report_input(self):
         print "Created a RetroGrade instance."
@@ -107,51 +108,25 @@ class RetroGrade:
 
     def invoke_grade_script(self):
         print "Invoking grade script"
-        ok = False
+        ok_result_tuple = (False, {})
         try:
             print "Changing directory to " + self.working_dir
             os.chdir(self.working_dir)
             print "... successfully changed directory."
-            # approach = "subprocess"
-            # approach = "import grade_assignment and run"
-            approach = "import AssignmentBase subclass and run"
-            if approach is "subprocess":
-                print "Creating output file..."
-                result_file_name = "retrograde-result.txt"
-                self.grade_script_output_file_path = os.path.join(self.working_dir,
-                                                                  result_file_name)
-                self.grade_script_output_file = open(result_file_name, 'w')
-                print "... created output file."
-                result = subprocess.call(["python", "grade_assignment.py"], 
-                                         stdout=self.grade_script_output_file, 
-                                         stderr=self.grade_script_output_file)
-                self.grade_script_result = result
-                ok = result is 0
-                print "Grader returned " + str(ok)
-            elif approach is "import grade_assignment and run":
-                print "Attempting to import and run grade_assignment..."
-                print "grade_assignment.py exist? " + str(os.path.exists("grade_assignment.py"))
-                print "Appending working dir to sys.path..."
-                sys.path.append(self.working_dir)
-                print "Working dir added. Should be able to import grade_assignment."
-                import grade_assignment
-                print "Should have loaded grade_assignment"
-                grade_assignment.grade()
-            elif approach is "import AssignmentBase subclass and run":
-                print "Attempting to import and instantiate Assignment..."
-                print "Assignment.py exists?" + str(os.path.exists("Assignment.py"))
-                print "Appending working dir to sys.path..."
-                sys.path.append(self.working_dir)
-                print "Working dir appended. Should be able to import Assignment."
-                from Assignment import Assignment
-                assign = Assignment()
-                print "Huzzah, got assignment instance"
-                assign.grade()
+            print "Attempting to import and instantiate Assignment..."
+            print "Assignment.py exists?" + str(os.path.exists("Assignment.py"))
+            print "Appending working dir to sys.path..."
+            sys.path.append(self.working_dir)
+            print "Working dir appended. Should be able to import Assignment."
+            from Assignment import Assignment
+            assign = Assignment()
+            print "... got assignment instance."
+            print "Invoking grade()..."
+            ok_result_tuple = assign.grade()
 
         except Exception, e:
-            ok = False
             traceback.print_exc()
-        return ok
+        return ok_result_tuple
 
 def start():
     parser = argparse.ArgumentParser()

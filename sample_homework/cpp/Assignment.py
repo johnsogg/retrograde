@@ -5,6 +5,8 @@ class Assignment(AssignmentBase):
         super(Assignment, self).__init__()
         self.assignment = "Linked Lists"
         self.lang = "cpp"
+        self.build_command = "make"
+        self.unit_test_command = "./linked_list_test"
         self.instructor_files = [
             "Makefile",
             "RetroPrinter.cpp",
