@@ -113,8 +113,9 @@ class RetroGrade:
             os.chdir(self.working_dir)
             print "... successfully changed directory."
             # approach = "subprocess"
-            approach = "import and run"
-            if (approach is "subprocess"):
+            # approach = "import grade_assignment and run"
+            approach = "import AssignmentBase subclass and run"
+            if approach is "subprocess":
                 print "Creating output file..."
                 result_file_name = "retrograde-result.txt"
                 self.grade_script_output_file_path = os.path.join(self.working_dir,
@@ -127,15 +128,26 @@ class RetroGrade:
                 self.grade_script_result = result
                 ok = result is 0
                 print "Grader returned " + str(ok)
-            elif (approach is "import and run"):
+            elif approach is "import grade_assignment and run":
                 print "Attempting to import and run grade_assignment..."
-                print "Does grade_assignment.py exist? " + str(os.path.exists("grade_assignment.py"))
+                print "grade_assignment.py exist? " + str(os.path.exists("grade_assignment.py"))
                 print "Appending working dir to sys.path..."
                 sys.path.append(self.working_dir)
-                print "Working dir appended. Should be able to import grade_assignment now."
+                print "Working dir added. Should be able to import grade_assignment."
                 import grade_assignment
                 print "Should have loaded grade_assignment"
                 grade_assignment.grade()
+            elif approach is "import AssignmentBase subclass and run":
+                print "Attempting to import and instantiate Assignment..."
+                print "Assignment.py exists?" + str(os.path.exists("Assignment.py"))
+                print "Appending working dir to sys.path..."
+                sys.path.append(self.working_dir)
+                print "Working dir appended. Should be able to import Assignment."
+                from Assignment import Assignment
+                assign = Assignment()
+                print "Huzzah, got assignment instance"
+                assign.grade()
+
         except Exception, e:
             ok = False
             traceback.print_exc()
