@@ -1,6 +1,8 @@
 # Points to the root of Google Test
 GTEST_DIR = /Users/johnsogg/Projects/retrograde/gtest-1.6.0
 
+GTEST_LIB = $(GTEST_DIR)/make/gtest_main.a
+
 # All tests produced by this Makefile.  ADD TO THIS LIST.
 TESTS = linked_list_test
 
@@ -23,27 +25,13 @@ GTEST_HEADERS = $(GTEST_DIR)/include/gtest/*.h \
 all : $(TESTS)
 
 clean :
-	rm -f $(TESTS) gtest.a gtest_main.a *.o
+	rm -f $(TESTS) *.o
 
-GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
+RetroPrinter.o : $(USER_DIR)/RetroPrinter.cpp \
+                 $(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/RetroPrinter.cpp
 
-gtest-all.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-                $(GTEST_DIR)/src/gtest-all.cc
-
-gtest_main.o : $(GTEST_SRCS_)
-	$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) $(CXXFLAGS) -c \
-                $(GTEST_DIR)/src/gtest_main.cc
-
-gtest.a : gtest-all.o
-	$(AR) $(ARFLAGS) $@ $^
-
-gtest_main.a : gtest-all.o gtest_main.o
-	$(AR) $(ARFLAGS) $@ $^
-
-# Builds a sample test.  A test should link with either gtest.a or
-# gtest_main.a, depending on whether it defines its own main()
-# function.
+# Assignment-specific build rules below.
 
 linked_list.o : $(USER_DIR)/linked_list.cpp \
                 $(USER_DIR)/linked_list.h \
@@ -58,10 +46,7 @@ linked_list_test.o : $(USER_DIR)/linked_list_test.cpp \
 linked_list_test : linked_list.o \
                    linked_list_test.o \
                    RetroPrinter.o \
-                   gtest_main.a
+		   $(GTEST_LIB)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
-RetroPrinter.o : $(USER_DIR)/RetroPrinter.cpp \
-                 $(GTEST_HEADERS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(USER_DIR)/RetroPrinter.cpp
 
