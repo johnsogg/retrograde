@@ -4,18 +4,14 @@ class Assignment(AssignmentBase):
     def __init__(self):
         super(Assignment, self).__init__()
         self.assignment = "Linked Lists"
-        self.lang = "cpp"
-        self.build_command = "make"
-        self.unit_test_command = "./linked_list_test"
+        self.lang = "py"
+        self.build_command = None
+        self.unit_test_command = "python linked_list_test.py"
         self.instructor_files = [
-            "Makefile",
-            "RetroPrinter.cpp",
-            "RetroPrinter.h",
-            "linked_list.h",
-            "linked_list_test.cpp"
+            "linked_list_test.py"
             ]
         self.student_files = [
-            "linked_list.cpp"
+            "linked_list.py"
             ]
         self.points = {
             "Report": 1,

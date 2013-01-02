@@ -37,7 +37,7 @@ class AssignmentBase(object):
         if (ok):
             print "Student file(s) in place."
 
-        if (ok):
+        if (ok and self.build_command is not None):
             # make linked_list -- need to think about how to extract this
             ok = self.run([self.build_command], sys.stdout, sys.stderr)
 
