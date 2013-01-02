@@ -18,6 +18,7 @@ class RetroGrade:
     def __init__(self, instr_dir, assignment, student_id, files):
         self.test_ok = False
         self.result_map = {}
+        self.unit_test_errors = ""
         self.output_path = ""
         self.base_assignment_dir = instr_dir
         self.assignment = assignment
@@ -36,7 +37,8 @@ class RetroGrade:
             ok_result_tuple = self.invoke_grade_script()
             self.test_ok = ok_result_tuple[0]
             self.result_map = ok_result_tuple[1]
-            self.output_path = ok_result_tuple[2]
+            self.unit_test_errors = ok_result_tuple[2]
+            self.output_path = ok_result_tuple[3]
 
     def report_input(self):
         print "Created a RetroGrade instance."

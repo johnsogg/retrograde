@@ -19,6 +19,7 @@ class AssignmentBase(object):
         print "Points Possible: " + str(self.get_total_points())
         ok = True;
         result = {}
+        errors = ""
         outfile_name = "unit_test_output.txt"
 
         if (ok):
@@ -46,7 +47,7 @@ class AssignmentBase(object):
             self.run([self.unit_test_command], outfileW, sys.stderr)
             outfileW.close()
             outfile = open(outfile_name, "r")
-            result = self.parse_for_grade(outfile)
+            result, errors = self.parse_for_grade(outfile)
 
         if len(result) > 0:
             self.print_results(result)
@@ -54,18 +55,21 @@ class AssignmentBase(object):
             ok = False
         joined = os.path.join('.', outfile_name)
         final_path = os.path.abspath(joined)
+        print errors
         print "Output is in the file: " + final_path
-        return (ok, result, final_path)
+        return (ok, result, errors, final_path)
 
     def parse_for_grade(self, outfile):
         print "Parsing outfile..."
         result = {}
+        errors = []
         for line in outfile:
-            self.get_test_result(line, result)
-        return result
+            self.get_test_result(line, result, errors)
+        return result, ''.join(errors)
 
-    def get_test_result(self, line, result):
+    def get_test_result(self, line, result, errors):
         pattern = "RetroGrade Result >\s*(\w.*):\s(.)"
+        ignore_pattern = "^RetroGrade"
         m = re.match(pattern, line)
         if (m):
             question_key = m.group(1)
@@ -83,7 +87,10 @@ class AssignmentBase(object):
                     print "       Here's the list of " + str(len(self.points)) + " known questions:"
                     print "\n       ".join(self.points.keys())
             result[question_key] = (score, self.points[question_key])
-            # print "You get " + str(score) + " points for " + question_key
+        elif re.match(ignore_pattern, line):
+            pass
+        else:
+            errors.append(line)
 
     def flushall(self):
         # is this necessary now that I'm not using separate processes?
