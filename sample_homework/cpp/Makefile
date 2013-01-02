@@ -1,5 +1,5 @@
-# Points to the root of Google Test, relative to where this file is.
-GTEST_DIR = /Users/johnsogg/Downloads/gtest-1.6.0
+# Points to the root of Google Test
+GTEST_DIR = /Users/johnsogg/Projects/retrograde/gtest-1.6.0
 
 # All tests produced by this Makefile.  ADD TO THIS LIST.
 TESTS = linked_list_test
