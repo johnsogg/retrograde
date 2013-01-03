@@ -1,39 +1,69 @@
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.Test;
+import org.junit.Before;
 import static org.junit.Assert.*;
 import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunListener;
 
 public class LinkedListTest {
-    @Test 
-    public void testExistence() {
-	int expected = 2;
-	int result = 4;
-	assertTrue("WTF mate", expected == result);
-    }
-
-    @Test 
-    public void testHappy() {
-	int expected = 2;
-	int result = 4;
-	assertFalse("WTF mate", expected == result);
-    }
 
     public static void main(String[] args) {
-	System.out.println("Starting...");
 	JUnitCore core= new JUnitCore();
 	core.addListener(new RetroPrinter());
 	core.run(LinkedListTest.class);
-	//	Result result = JUnitCore.runClasses(LinkedListTest.class);
-	// for (Failure failure : result.getFailures()) {
-	//     System.out.println("Failure: " + failure.getMessage());
-	//     Description d = failure.getDescription();
-	//     System.out.println("\t" + d.getMethodName());
-	// }
-	System.out.println("... Ending.");
     }
+
+    LinkedList list;
+
+    @Before
+    public void init() {
+	list = new LinkedList();
+    }
+
+    @Test 
+    public void testReport() {
+
+    }
+
+    @Test 
+    public void testInitNode() {
+
+    }
+
+    @Test 
+    public void testInsertEmpty() {
+
+    }
+
+    @Test 
+    public void testInsertStart() {
+
+    }
+
+    @Test 
+    public void testInsertEnd() {
+
+    }
+
+    @Test 
+    public void testInsertRedundant() {
+
+    }
+
+    @Test 
+    public void testRemove() {
+	Node top = list.initNode(0);
+	Node one = list.initNode(1);
+	Node two = list.initNode(2);
+	Node three = list.initNode(3);
+	top.next = one;
+	one.next = two;
+	two.next = three;
+	
+	list.removeData(top, 2);
+	assertEquals(top.next, one);
+	assertEquals(one.next, three);
+	assertNull(three.next);
+    }
+
+
+
 }
