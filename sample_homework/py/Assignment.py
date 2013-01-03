@@ -22,5 +22,3 @@ class Assignment(AssignmentBase):
             "InsertRedundant" : 1,
             "Remove" : 4,
             }
-
-

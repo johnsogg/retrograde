@@ -9,13 +9,21 @@ def init_node(data):
     """
     Return an initialized node.
     """
-    pass
+    ret = node()
+    ret.data = data
+    return ret
 
 def report(root):
     """
     Given a list, output the contents separated by spaces
     """
-    pass
+    sb = []
+    cursor = root
+    while (cursor.next is not None):
+        sb.append(str(cursor.next.data))
+        cursor = cursor.next
+    ret = " ".join(sb)
+    return ret
 
 def insert(parent, child):
     """
