@@ -3,6 +3,7 @@
 import argparse
 import glob
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,14 @@ class RetroGrade:
     LANG_JAVA = "java"
     LANG_PYTHON = "py"
     LANG_CPP = "cpp"
+    # the AVOID string is a regular expression used to avoid
+    # by-product files like compiler output or emacs backups
+    AVOID = "|".join([ ".class$",
+                       ".o$",
+                       ".a$",
+                       ".pyc$",
+                       "~$",
+                       ])
 
     def __init__(self, instr_dir, assignment, student_id, files):
         self.test_ok = False
@@ -82,21 +91,27 @@ class RetroGrade:
         is_ins_dir_present = os.path.isdir(self.instructor_dir)
         return is_ins_dir_present
 
+    def avoid_file(self, path):
+        m = re.match(RetroGrade.AVOID, path);
+        return m is not None
+
     def copy_files(self):
         print "About to copy files to working directory: " + self.working_dir
         ok = True
         try:
             print "Copying Student files..."
             for file in self.files:
-                print "  ... " + file
-                shutil.copy(file, self.working_dir)
+                if (not self.avoid_file(file)):
+                    print "  ... " + file
+                    shutil.copy(file, self.working_dir)
             print "Copied Student files."
             print "Copying Instructor files..."
             instructor_files = glob.glob(os.path.join(self.instructor_dir, "*"))
             for file in instructor_files:
-                start, end = os.path.split(file)
-                print "  ... " + end 
-                shutil.copy(file, self.working_dir)
+                if (not self.avoid_file(file)):
+                    start, end = os.path.split(file)
+                    print "  ... " + end 
+                    shutil.copy(file, self.working_dir)
             print "Copied Instructor files."
         except Exception, x:
             print (str(x))
