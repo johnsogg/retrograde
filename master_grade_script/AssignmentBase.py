@@ -48,6 +48,7 @@ class AssignmentBase(object):
             outfileW.close()
             outfile = open(outfile_name, "r")
             result, errors = self.parse_for_grade(outfile)
+            self.check_for_omitted_tests(result)
 
         if len(result) > 0:
             self.print_results(result)
@@ -66,6 +67,18 @@ class AssignmentBase(object):
         for line in outfile:
             self.get_test_result(line, result, errors)
         return result, ''.join(errors)
+
+    def check_for_omitted_tests(self, result):
+        print "check for ommitted tests in the following list:"
+        targetSet = set(self.points.keys())
+        inputSet = set(result.keys())
+        if (targetSet != inputSet):
+            print "\n  ******************************************************************"
+            print "  * WARNING: Tests performed were not the same as those prescribed."
+            notTested = targetSet.difference(inputSet)
+            for thing in notTested:
+                print "  *\tmissing: " + thing
+            print "  ******************************************************************\n"
 
     def get_test_result(self, line, result, errors):
         pattern = "RetroGrade Result >\s*(\w.*):\s(.)"
