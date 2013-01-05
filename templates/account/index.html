@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>Retrograde Accounts Index</title>
+</head>
+<body>
+<h1>Word up</h1>
+
+<p>This is a standard HTML page.</p>
+
+{% if request %}
+There's a request object!
+{% else %}
+There is no request object :(
+{% endif %}
+
+{% if user %}
+There's a user object! Is it authenticated? {{ user.is_authenticated }}
+{% else %}
+There is no user object :(
+{% endif %}
+
+
+<p>Did you see?</p>
+
+</body>
+</html>
