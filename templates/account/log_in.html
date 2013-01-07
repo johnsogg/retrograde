@@ -10,22 +10,25 @@ Log In
 {% endblock mainHeading %}
 
 {% block content %}
-<form name="login">
+<form name="login" method="post">
+{% csrf_token %}
 <table>
+{% for field in form.visible_fields %}
+<div class="fieldWrapper">
   <tr>
-    <td>Account:</td>
-    <td><input type="text" /></td>
+    <td>{{ field.label_tag }}:</td>
+    <td>{{ field }}</td>
+    <td>{{ field.errors }}</td>
   </tr>
-  <tr>
-    <td>Password:</td>
-    <td><input type="password" /></td>
-  </tr>
-  <tr>
-    <td></td>
-    <td><input type="submit"/></td>
-  </tr>
+</div>
+{% endfor %}
+<tr>
+  <td></td>
+  <td><input type="submit" /></td>
+  <td></td>
+</tr>
 </table>
-
+</form>
 <p>Need to <a href="create">create an account?</a></p>
 
 {% endblock content %}

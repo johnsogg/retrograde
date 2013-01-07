@@ -3,7 +3,10 @@
 <title>Retrograde | {% block subtitle %}Base Template{% endblock %}</title>
 </head>
 <body>
-{% block importantMessage %}{% endblock importantMessage %}
+
+{% include "base/topbar.html" %}
+
+{% block importantMessage %}{{ importantMessage }}{% endblock importantMessage %}
 
 <h1>{% block mainHeading %}{% endblock mainHeading %}</h1>
 

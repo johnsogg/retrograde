@@ -12,6 +12,7 @@ Create A New Account
 {% block content %}
 <form method="post">{% csrf_token %}
 <table>
+
 {% for field in form.visible_fields %} 
   <div class="fieldWrapper">
     <tr>
