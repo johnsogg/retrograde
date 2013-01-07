@@ -1,15 +1,13 @@
 <html>
 <head>
-<title>Retrograde {% block title %}Base Template{% endblock %}</title>
+<title>Retrograde | {% block subtitle %}Base Template{% endblock %}</title>
 </head>
 <body>
-<h1>Word up</h1>
+{% block importantMessage %}{% endblock importantMessage %}
 
-<p>This is a standard HTML page.</p>
+<h1>{% block mainHeading %}{% endblock mainHeading %}</h1>
 
 {% block content %}Default content. Make a content block. {% endblock content %}
-
-<p>There should be some content just above this.</p>
 
 </body>
 </html>

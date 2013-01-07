@@ -1,9 +1,31 @@
 {% extends "base/index.html" %}
 
-{% block title %}
-RetroGrade Log In
-{% endblock title %}
+{% block subtitle %}
+Log In
+{% endblock subtitle %}
+
+
+{% block mainHeading %}
+Log In
+{% endblock mainHeading %}
 
 {% block content %}
-<p>I see you would like to log in. Good !</p>
+<form name="login">
+<table>
+  <tr>
+    <td>Account:</td>
+    <td><input type="text" /></td>
+  </tr>
+  <tr>
+    <td>Password:</td>
+    <td><input type="password" /></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td><input type="submit"/></td>
+  </tr>
+</table>
+
+<p>Need to <a href="create">create an account?</a></p>
+
 {% endblock content %}

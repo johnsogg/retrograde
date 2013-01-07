@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
     'homework',
+    'account',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -154,3 +155,5 @@ LOGGING = {
         },
     }
 }
+
+AUTH_PROFILE_MODULE = 'account.retrouser'
