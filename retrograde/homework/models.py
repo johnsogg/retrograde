@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import date, timedelta
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
@@ -18,6 +19,26 @@ class Homework(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def is_past(self):
+        ret = False
+        if date.today() > self.due_date:
+            ret = True
+        return ret
+
+    def is_now(self):
+        ret = False
+        if self.is_future:
+            td = timedelta(7)
+            then = self.due_date - td
+            ret = date.today() > then
+        return ret
+    
+    def is_future(self):
+        ret = False
+        if date.today() <= self.due_date:
+            ret = True
+        return ret
 
 
 class Resource(models.Model):
