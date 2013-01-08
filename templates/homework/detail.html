@@ -18,9 +18,14 @@
 </ul>
 
 {% if subs %}
-student has submitted something before. list them.
+<p>List o' previous submissions for this homework:</p>
+<ul>
+{% for s in subs %}
+<li><a href="/hw/{{hw.id}}/sub/{{s.id}}">{{ s.submitted_date }} {{ s.score }} / {{ s.possible_score }} {{ s.lang }} </a></li>
+{% endfor %}
+</ul>
 {% else %}
-student has not submitted anything yet.
+<p>You haven't submitted anything for this assignment yet.</p>
 {% endif %}
 
 <form name="turn_in_homework" enctype="multipart/form-data" 
@@ -32,6 +37,24 @@ student has not submitted anything yet.
 <p>A file: <input type="file" name="somefile3"></p>
 <input type="submit" />
 </form>
+
+{% if sub %}
+<p>Submission results:</p>
+
+<p>Score: {{ sub.score }} / {{ sub.possible_score }}
+
+{% if max_score %}
+<p>Yay :)</p>
+{% endif %}
+</p>
+
+<p><pre>{{ sub.retrograde_output }}</pre></p>
+
+<p>Verbose output...</p>
+
+<p><pre>{{ sub.verbose_output }}</pre></p>
+
+{% endif %}
 {% endblock content %}
 
 {# ta army meeting code: fprwks #}

@@ -1,6 +1,6 @@
 # Django settings for retrograde project.
 
-import os
+import os, sys
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -172,3 +172,11 @@ LOGGING = {
 AUTH_PROFILE_MODULE = 'account.retrouser'
 
 LOGIN_URL = '/account'
+
+RETROGRADE_BASE_PATH = '/Users/johnsogg/Projects/retrograde/'
+
+RETROGRADE_MODULE_PATH = os.path.join(RETROGRADE_BASE_PATH, 'master_grade_script')
+
+RETROGRADE_INSTRUCTOR_PATH = os.path.join(RETROGRADE_BASE_PATH, '')
+
+sys.path.append(RETROGRADE_MODULE_PATH)

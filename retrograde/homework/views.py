@@ -6,12 +6,17 @@
 This is a test.
 """
 
+
+from datetime import datetime
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404, render
-from homework.models import Homework, Course, Submission, SubmissionFile
-from datetime import datetime
 from django.utils.timezone import utc
+from grade import RetroGrade, extract_score, format_results
+from homework.models import Homework, Course, Submission, SubmissionFile
+from tempfile import mkdtemp
+import os
 
 # def index(request):
 #     """
@@ -53,7 +58,7 @@ def view_specific_assignment(request, hw_id):
         variables['hw'] = hw
         variables['related'] = hw.resource_set.all()
         # has the student has submitted this homework?
-        subs = hw.submission_set.all()
+        subs = hw.submission_set.filter(student=request.user)
         variables['subs'] = subs
     else:
         raise Http404
@@ -77,6 +82,7 @@ def submit_homework(request, hw_id):
             sub.student = request.user
             sub.submitted_date = now
             sub.score = 0
+            sub.possible_score = 0
             sub.verbose_output = "verbose output..."
             sub.retrograde_output = "retrograde output..."
             sub.save()
@@ -95,9 +101,49 @@ def submit_homework(request, hw_id):
                 text = "".join(buf)
                 f.contents = text
                 f.save()
-                print "Saved file upload: " + str(f)
             variables['importantMessage'] = "Got the homework"
-            print("Looks like I am done!")
+            do_retrograde_script(sub)
+            variables['sub'] = sub
+            if (sub.score == sub.possible_score and sub.score > 0):
+                variables['max_score'] = True
+        subs = hw.submission_set.filter(student=request.user)
+        variables['subs'] = subs
     else:
         raise Http404
     return render(request, 'homework/detail.html', variables)
+
+def do_retrograde_script(sub):
+    """
+    Runs the RetroGrade grading script. This extracts the related
+    files for this homework submission to a temp dir first.
+    """
+    file_objects = sub.submissionfile_set.all()
+    tmp = mkdtemp()
+    student_files = []
+    for f in file_objects:
+        student_file = os.path.join(tmp, f.file_name);
+        writeme = open(student_file, 'w')
+        writeme.write(f.contents)
+        writeme.close()
+        student_files.append(student_file)
+        print "student_files is now: " + str(student_files)
+    hw = sub.homework
+    rg = RetroGrade(settings.RETROGRADE_INSTRUCTOR_PATH,
+                    hw.name,
+                    sub.student.email,
+                    student_files)
+    score, possible = extract_score(rg.result_map)
+    pretty = format_results(rg.result_map)
+    print "Finished grading. Score: " + str(score) + " / " + str(possible)
+    verbose = rg.get_verbose_log()
+    sub.verbose_output = verbose
+    sub.retrograde_output = pretty
+    sub.lang = rg.language
+    sub.score = score
+    sub.possible_score = possible
+    sub.save()
+    # print pretty
+    
+# usage: grade.py [-h]
+#                instructor_dir assignment student_id student_file
+#                [student_file ...]

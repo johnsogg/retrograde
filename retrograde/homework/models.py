@@ -46,6 +46,8 @@ class Submission(models.Model):
     student = models.ForeignKey(User)
     submitted_date = models.DateTimeField("Date Submitted")
     score = models.IntegerField()
+    possible_score = models.IntegerField()
+    lang = models.CharField(max_length=10)
     verbose_output = models.TextField()
     retrograde_output = models.TextField()
 
