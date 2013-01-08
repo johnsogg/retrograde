@@ -6,8 +6,8 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    # url(r'^$', 'retrograde.views.home', name='home'),
-    # url(r'^retrograde/', include('retrograde.foo.urls')),
+    # home (no path info present)
+    url(r'^$', 'retrograde.views.home', name='home'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

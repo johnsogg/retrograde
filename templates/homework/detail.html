@@ -1,5 +1,37 @@
-{% if homework %}
-<h1>{{greeting}}</h1>
+{% extends "base/index.html" %}
+
+{% block subtitle %}{{ hw.course.course_code }} Homework: {{ hw.name }}{% endblock subtitle%}
+
+{% block mainHeading %}{{ hw.course.course_code }} Homework: {{ hw.name }}{% endblock mainHeading %}
+
+{% block importantMessage %}{% endblock importantMessage %}
+
+{% block content %}
+<p>{{ hw.name }}: Due {{ hw.due_date }}</p>
+
+<p>{{ hw.description }}</p>
+
+<ul>
+{% for r in related %}
+  <li><a href="{{r.value}}">{{r.name}}: {{r.value}}</a></li>
+{% endfor %}
+</ul>
+
+{% if subs %}
+student has submitted something before. list them.
 {% else %}
-    <p>No Greeting. Sucker.</p>
+student has not submitted anything yet.
 {% endif %}
+
+<form name="turn_in_homework" enctype="multipart/form-data" 
+      method="POST" action="/hw/{{hw.id}}/submit/">
+{% csrf_token %}
+<p>Sample textbox: <input type="text" name="foo" /></p>
+<p>A file: <input type="file" name="somefile"></p>
+<p>A file: <input type="file" name="somefile2"></p>
+<p>A file: <input type="file" name="somefile3"></p>
+<input type="submit" />
+</form>
+{% endblock content %}
+
+{# ta army meeting code: fprwks #}

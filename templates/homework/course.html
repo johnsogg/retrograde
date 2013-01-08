@@ -1,22 +1,44 @@
 {% extends "base/index.html" %}
 
+{% block subtitle %}{{course.course_code}}{% endblock subtitle %}
+
 {% block content %}
 {% if course %}
-Found course {{ course }}.
+<h1>{{ course.name }} ({{ course.course_code }})</h1>
+
+<p>{{ course.description }}</p>
+
 {% else %}
 Did not find that course. Did you type it correctly?
 {% endif %}
 
 {% if due_now %}
-There is homework due now! {{due_now}}
-{% endif %}
-
-{% if due_past %}
-There is homework due in the past. {{due_past}}
+<h1>Due Soon</h1>
+<ul>
+{% for hw in due_now %}
+<li><a href="/hw/{{hw.id}}">{{hw}}</a></li>
+{% endfor %}
+</ul>
 {% endif %}
 
 {% if due_future %}
-There is homework due in the future. {{due_future}}
+<h1>Due In The Future</h1>
+<ul>
+{% for hw in due_future %}
+<li><a href="/hw/{{hw.id}}">{{hw}}</a></li>
+{% endfor %}
+</ul>
 {% endif %}
+
+{% if due_past %}
+<h1>Due In The Past</h1>
+<ul>
+{% for hw in due_past %}
+<li><a href="/hw/{{hw.id}}">{{hw}}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+
 
 {% endblock content %}

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from datetime import date, timedelta
 
@@ -12,7 +13,7 @@ class Course(models.Model):
 
 class Homework(models.Model):
     name = models.CharField(max_length=100)
-    course = models.ForeignKey('Course')
+    course = models.ForeignKey(Course)
     description = models.TextField()
     pub_date = models.DateTimeField("Date published")
     due_date = models.DateField()
@@ -28,7 +29,7 @@ class Homework(models.Model):
 
     def is_now(self):
         ret = False
-        if self.is_future:
+        if not self.is_past() and self.is_future():
             td = timedelta(7)
             then = self.due_date - td
             ret = date.today() > then
@@ -40,9 +41,22 @@ class Homework(models.Model):
             ret = True
         return ret
 
+class Submission(models.Model):
+    homework = models.ForeignKey(Homework)
+    student = models.ForeignKey(User)
+    submitted_date = models.DateTimeField("Date Submitted")
+    score = models.IntegerField()
+    verbose_output = models.TextField()
+    retrograde_output = models.TextField()
+
+class SubmissionFile(models.Model):
+    submission = models.ForeignKey(Submission)
+    contents = models.TextField()
+    file_name = models.CharField(max_length=100)
+    uploaded_date = models.DateTimeField("Date Uploaded")
 
 class Resource(models.Model):
-    homework = models.ForeignKey('Homework')
+    homework = models.ForeignKey(Homework)
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=255)
 
