@@ -6,4 +6,17 @@ Found course {{ course }}.
 {% else %}
 Did not find that course. Did you type it correctly?
 {% endif %}
+
+{% if due_now %}
+There is homework due now! {{due_now}}
+{% endif %}
+
+{% if due_past %}
+There is homework due in the past. {{due_past}}
+{% endif %}
+
+{% if due_future %}
+There is homework due in the future. {{due_future}}
+{% endif %}
+
 {% endblock content %}

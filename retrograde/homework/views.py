@@ -28,11 +28,18 @@ from homework.models import Homework, Course
 @login_required
 def course(request, course_id):
     course = Course.objects.get(id=course_id)
+    variables = {'user' : request.user }
+    if (course):
+        variables['course'] = course
+        homeworks = Homework.objects.filter(course_id=course.id)
+        upcoming = filter(Homework.is_now, homeworks)
+        past = filter(Homework.is_past, homeworks)
+        future = filter(Homework.is_future, homeworks)
     return render(request, 'homework/course.html',
                   { 'user' : request.user,
-                    'course' : course
+                    'course' : course,
+                    'due_now' : upcoming,
+                    'due_past' : past,
+                    'due_future' : future,
                     })
 
-        
-
-        
