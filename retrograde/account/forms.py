@@ -1,4 +1,5 @@
 from django import forms
+from homework.models import Course
 
 class CreateAccountForm(forms.Form):
     email = forms.EmailField(label="Email Address")
@@ -8,6 +9,8 @@ class CreateAccountForm(forms.Form):
                                 label="First Name")
     lastName = forms.CharField(required=False,
                                label="Last Name")
+    courses = Course.objects.all()
+    course = forms.ModelChoiceField(queryset=courses, empty_label=None)
 
 class LogInForm(forms.Form):
     email = forms.EmailField(label="Email Address")

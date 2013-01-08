@@ -1,0 +1,9 @@
+{% extends "base/index.html" %}
+
+{% block content %}
+{% if course %}
+Found course {{ course }}.
+{% else %}
+Did not find that course. Did you type it correctly?
+{% endif %}
+{% endblock content %}
