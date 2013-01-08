@@ -25,6 +25,7 @@ class RetroGrade:
                        ])
 
     def __init__(self, instr_dir, assignment, student_id, files):
+        self.verbose = []
         self.test_ok = False
         self.result_map = {}
         self.unit_test_errors = ""
@@ -49,16 +50,23 @@ class RetroGrade:
             self.unit_test_errors = ok_result_tuple[2]
             self.output_path = ok_result_tuple[3]
 
+    def __str__(self):
+        sb = []
+        sb.append("Lang=" + str(self.language))
+        sb.append("Test_OK=" + str(self.test_ok))
+        sb.append("HW=" + str(self.assignment))
+        return " ".join(sb)
+            
     def report_input(self):
-        print "Created a RetroGrade instance."
-        print "  Assignment:      " + self.assignment
-        print "  Student:         " + self.student_id
-        print "  Student Files:   " + ", ".join(self.files)
+        self.verbose_log( "Created a RetroGrade instance.")
+        self.verbose_log( "  Assignment:      " + self.assignment)
+        self.verbose_log( "  Student:         " + self.student_id)
+        self.verbose_log( "  Student Files:   " + ", ".join(self.files))
 
     def determine_language(self):
         ok = False;
         for file in self.files:
-            print "File: " + file
+            self.verbose_log( "File: " + file)
             if (file.endswith(".java")):
                 self.language = RetroGrade.LANG_JAVA
                 break
@@ -69,11 +77,11 @@ class RetroGrade:
                 self.language = RetroGrade.LANG_PYTHON
                 break
         if (self.language is RetroGrade.LANG_UNKNOWN):
-            print "Could not determine language based on input files."
-            print "Source files must end with '.java', '.py', or '.cpp'."
+            self.verbose_log( "Could not determine language based on input files.")
+            self.verbose_log( "Source files must end with '.java', '.py', or '.cpp'.")
             ok = False
         else:
-            print "Determined language = " + self.language
+            self.verbose_log( "Determined language = " + self.language)
             ok = True
         return ok
 
@@ -96,54 +104,90 @@ class RetroGrade:
         return m is not None
 
     def copy_files(self):
-        print "About to copy files to working directory: " + self.working_dir
+        self.verbose_log( "About to copy files to working directory: " + self.working_dir)
         ok = True
         try:
-            print "Copying Student files..."
+            self.verbose_log( "Copying Student files...")
             for file in self.files:
                 if (not self.avoid_file(file)):
-                    print "  ... " + file
+                    self.verbose_log( "  ... " + file)
                     shutil.copy(file, self.working_dir)
-            print "Copied Student files."
-            print "Copying Instructor files..."
+            self.verbose_log( "Copied Student files.")
+            self.verbose_log( "Copying Instructor files...")
             instructor_files = glob.glob(os.path.join(self.instructor_dir, "*"))
             for file in instructor_files:
                 if (not self.avoid_file(file)):
                     start, end = os.path.split(file)
-                    print "  ... " + end 
+                    self.verbose_log( "  ... " + end )
                     shutil.copy(file, self.working_dir)
-            print "Copied Instructor files."
+            self.verbose_log( "Copied Instructor files.")
         except Exception, x:
-            print (str(x))
+            self.verbose_log( (str(x)))
             traceback.print_stack()
             ok = False
         if (ok):
-            print "Copy files successful "
+            self.verbose_log( "Copy files successful ")
         else:
-            print "One or more files did not copy. See stack trace above."
+            self.verbose_log( "One or more files did not copy. See stack trace above.")
         return ok
 
     def invoke_grade_script(self):
-        print "Invoking grade script"
+        self.verbose_log( "Invoking grade script")
         ok_result_tuple = (False, {})
         try:
-            print "Changing directory to " + self.working_dir
+            self.verbose_log( "Changing directory to " + self.working_dir)
             os.chdir(self.working_dir)
-            print "... successfully changed directory."
-            print "Attempting to import and instantiate Assignment..."
-            print "Assignment.py exists?" + str(os.path.exists("Assignment.py"))
-            print "Appending working dir to sys.path..."
+            self.verbose_log( "... successfully changed directory.")
+            self.verbose_log( "Attempting to import and instantiate Assignment...")
+            self.verbose_log( "Assignment.py exists?" + str(os.path.exists("Assignment.py")))
+            self.verbose_log( "Appending working dir to sys.path...")
             sys.path.append(self.working_dir)
-            print "Working dir appended. Should be able to import Assignment."
+            self.verbose_log( "Working dir appended. Should be able to import Assignment.")
             from Assignment import Assignment
             assign = Assignment()
-            print "... got assignment instance."
-            print "Invoking grade()..."
+            self.verbose_log( "... got assignment instance.")
+            self.verbose_log( "Invoking grade()...")
             ok_result_tuple = assign.grade()
-
+            self.verbose_log(assign.get_verbose_log())
         except Exception, e:
             traceback.print_exc()
         return ok_result_tuple
+
+
+    def verbose_log(self, words):
+        self.verbose.append(words)
+
+    def get_verbose_log(self):
+        return "\n".join(self.verbose)
+
+
+def format_results(results):
+    sb = []
+    labelf = "{:>30} : "
+    numf = "{:>3}"
+    sep = "   / "
+    total_score = 0
+    total_possible_score = 0
+    for k in results.keys():
+        total_score = total_score + results[k][0]
+        p = str(results[k][0])
+        max_possible = str(results[k][1])
+        total_possible_score = total_possible_score + results[k][1]
+        sb.append(labelf.format(k) + numf.format(p) + sep + numf.format(max_possible) + "\n")
+    sb.append("\n" + labelf.format("TOTAL") + numf.format(total_score) + sep + numf.format(total_possible_score) + "\n")
+    return "".join(sb)
+
+def extract_score(results):
+    """
+    Returns an tuple of two integers. The first is the student score,
+    the second is the total number of possible points.
+    """
+    total_score = 0;
+    total_possible_score = 0;
+    for k in results.keys():
+        total_score = total_score + results[k][0]
+        total_possible_score = total_possible_score + results[k][1]
+    return (total_score, total_possible_score)
 
 def start():
     parser = argparse.ArgumentParser()

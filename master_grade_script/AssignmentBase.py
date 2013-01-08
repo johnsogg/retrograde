@@ -2,6 +2,7 @@ import os, re, subprocess, sys
 
 class AssignmentBase(object):
     def __init__(self):
+        self.verbose = []
         self.assignment = "Unknown Assignment"
         self.lang = "Unknown Language"
         self.build_command = "echo replace this with your build command string"
@@ -10,13 +11,19 @@ class AssignmentBase(object):
         self.student_files = []
         self.points = {}
 
+    def verbose_log(self, words):
+        self.verbose.append(words)
+
+    def get_verbose_log(self):
+        return "\n".join(self.verbose)
+
     def get_total_points(self):
         return sum(self.points.values())
 
     def grade(self):
-        print "Assignment: " + self.assignment
-        print "Language: " + self.lang
-        print "Points Possible: " + str(self.get_total_points())
+        self.verbose_log("Assignment: " + self.assignment)
+        self.verbose_log("Language: " + self.lang)
+        self.verbose_log("Points Possible: " + str(self.get_total_points()))
         ok = True;
         result = {}
         errors = ""
@@ -25,17 +32,17 @@ class AssignmentBase(object):
         if (ok):
             for f in self.instructor_files:
                 if not os.path.exists(f):
-                    print "Error: Instructor File '" + f + "' not found!"
+                    self.verbose_log("Error: Instructor File '" + f + "' not found!")
                     ok = False
         if (ok):
-            print "Instructor file(s) in place."
+            self.verbose_log("Instructor file(s) in place.")
         if (ok):
             for f in self.student_files:
                 if not os.path.exists(f):
-                    print "Error: Student File '" + f + "' not found!"
+                    self.verbose_log("Error: Student File '" + f + "' not found!")
                     ok = False
         if (ok):
-            print "Student file(s) in place."
+            self.verbose_log("Student file(s) in place.")
 
         if (ok and self.build_command is not None):
             # make linked_list -- need to think about how to extract this
@@ -51,17 +58,18 @@ class AssignmentBase(object):
             self.check_for_omitted_tests(result)
 
         if len(result) > 0:
-            self.print_results(result)
+            # print_results(result)
+            pass
         else:
             ok = False
         joined = os.path.join('.', outfile_name)
         final_path = os.path.abspath(joined)
-        print errors
-        print "Output is in the file: " + final_path
+        self.verbose_log(errors)
+        self.verbose_log("Output is in the file: " + final_path)
         return (ok, result, errors, final_path)
 
     def parse_for_grade(self, outfile):
-        print "Parsing outfile..."
+        self.verbose_log("Parsing outfile...")
         result = {}
         errors = []
         for line in outfile:
@@ -69,16 +77,16 @@ class AssignmentBase(object):
         return result, ''.join(errors)
 
     def check_for_omitted_tests(self, result):
-        print "check for ommitted tests in the following list:"
+        self.verbose_log("check for ommitted tests in the following list:")
         targetSet = set(self.points.keys())
         inputSet = set(result.keys())
         if (targetSet != inputSet):
-            print "\n  ******************************************************************"
-            print "  * WARNING: Tests performed were not the same as those prescribed."
+            self.verbose_log("\n  ******************************************************************")
+            self.verbose_log("  * WARNING: Tests performed were not the same as those prescribed.")
             notTested = targetSet.difference(inputSet)
             for thing in notTested:
-                print "  *\tmissing: " + thing
-            print "  ******************************************************************\n"
+                self.verbose_log("  *\tmissing: " + thing)
+            self.verbose_log("  ******************************************************************\n")
 
     def get_test_result(self, line, result, errors):
         pattern = "RetroGrade Result >\s*(\w.*):\s(.)"
@@ -93,12 +101,12 @@ class AssignmentBase(object):
                 if question_key in self.points:
                     score = self.points[question_key]
                 else:
-                    print "ERROR: No points assigned for question '" + question_key + "'"
-                    print "       Please contact the instructor about this problem. Other"
-                    print "       students will have this issue as well."
-                    print ""
-                    print "       Here's the list of " + str(len(self.points)) + " known questions:"
-                    print "\n       ".join(self.points.keys())
+                    self.verbose_log("ERROR: No points assigned for question '" + question_key + "'")
+                    self.verbose_log("       Please contact the instructor about this problem. Other")
+                    self.verbose_log("       students will have this issue as well.")
+                    self.verbose_log("")
+                    self.verbose_log("       Here's the list of " + str(len(self.points)) + " known questions:")
+                    self.verbose_log("\n       ".join(self.points.keys()))
             result[question_key] = (score, self.points[question_key])
         elif re.match(ignore_pattern, line):
             pass
@@ -111,27 +119,13 @@ class AssignmentBase(object):
         sys.stderr.flush()
 
     def run(self, args, out, err):
-        print "\nRunning " + " ".join(args) + "...\n"
+        self.verbose_log("\nRunning " + " ".join(args) + "...\n")
         self.flushall()
         ret = 0 is subprocess.call(args, shell=True, stdout=out, stderr=sys.stderr)
-        print "\n ... return value: " + str(ret) + "\n"
+        self.verbose_log("\n ... return value: " + str(ret) + "\n")
         self.flushall()
         return ret
 
-    def print_results(self, results):
-        print "Printing results..."
-        labelf = "{:>30} : "
-        numf = "{:>3}"
-        sep = "   / "
-        total_score = 0
-        total_possible_score = 0
-        for k in results.keys():
-            total_score = total_score + results[k][0]
-            p = str(results[k][0])
-            max_possible = str(results[k][1])
-            total_possible_score = total_possible_score + results[k][1]
-            print(labelf.format(k) + numf.format(p) + sep + numf.format(max_possible))
-        print("\n" + labelf.format("TOTAL") + numf.format(total_score) + sep + numf.format(total_possible_score) + "\n")
 
 class ExampleAssignment(AssignmentBase):
     def __init__(self):
