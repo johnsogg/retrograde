@@ -15,8 +15,6 @@ from django.contrib.auth import authenticate, login, logout
 
 def index(request):
     if request.user.is_authenticated():
-        print "user: " + request.user
-        print "course: " + request.user.get_profile().course
         return render(request, 
                       'account/view-account.html', 
                       { 'user' : request.user,
