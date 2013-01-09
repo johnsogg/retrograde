@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import assignment # gives access to Assignment class
 import argparse
 import glob
 import os
@@ -25,30 +26,34 @@ class RetroGrade:
                        ])
 
     def __init__(self, instr_dir, assignment, student_id, files):
-        self.verbose = []
-        self.test_ok = False
-        self.result_map = {}
-        self.unit_test_errors = ""
-        self.output_path = ""
-        self.base_assignment_dir = instr_dir
-        self.assignment = assignment
-        self.student_id = student_id
-        self.files = files
-        self.language = RetroGrade.LANG_UNKNOWN
-        self.report_input()
-        ok = True
-        if (ok):
-            ok = self.determine_language()
-        if (ok):
-            ok = self.establish_dirs()
-        if (ok):
-            ok = self.copy_files()
-        if (ok):
-            ok_result_tuple = self.invoke_grade_script()
-            self.test_ok = ok_result_tuple[0]
-            self.result_map = ok_result_tuple[1]
-            self.unit_test_errors = ok_result_tuple[2]
-            self.output_path = ok_result_tuple[3]
+        try:
+            self.verbose = []
+            self.test_ok = False
+            self.result_map = {}
+            self.unit_test_errors = ""
+            self.output_path = ""
+            self.base_assignment_dir = instr_dir
+            self.assignment = assignment
+            self.student_id = student_id
+            self.files = files
+            self.language = RetroGrade.LANG_UNKNOWN
+            self.report_input()
+            ok = True
+            if (ok):
+                ok = self.determine_language()
+            if (ok):
+                ok = self.establish_dirs()
+            if (ok):
+                ok = self.copy_files()
+            if (ok):
+                ok_result_tuple = self.invoke_grade_script()
+                self.test_ok = ok_result_tuple[0]
+                self.result_map = ok_result_tuple[1]
+                self.unit_test_errors = ok_result_tuple[2]
+                self.output_path = ok_result_tuple[3]
+        except:
+            print "\n\nGot exception (see above). RetroGrade verbose log:"
+            print self.get_verbose_log()
 
     def __str__(self):
         sb = []
@@ -97,6 +102,9 @@ class RetroGrade:
                                                 self.assignment)
         self.instructor_dir = os.path.join(self.base_instructor_dir, self.language)
         is_ins_dir_present = os.path.isdir(self.instructor_dir)
+        self.description_files = []
+        self.description_files.append(os.path.abspath(os.path.join(self.base_instructor_dir, 'description-common.json')))
+        self.description_files.append(os.path.abspath(os.path.join(self.instructor_dir, 'description.json')))
         return is_ins_dir_present
 
     def avoid_file(self, path):
@@ -128,7 +136,7 @@ class RetroGrade:
         if (ok):
             self.verbose_log( "Copy files successful ")
         else:
-            self.verbose_log( "One or more files did not copy. See stack trace above.")
+            self.verbose_log( "One or more files did not copy. See stack trace.")
         return ok
 
     def invoke_grade_script(self):
@@ -138,7 +146,9 @@ class RetroGrade:
             self.verbose_log( "Changing directory to " + self.working_dir)
             os.chdir(self.working_dir)
             self.verbose_log( "... successfully changed directory.")
-            assign = Assignment()
+            self.verbose_log("Using description files: " + \
+                                 " ".join(self.description_files))
+            assign = assignment.Assignment(self.description_files)
             self.verbose_log( "... got assignment instance.")
             self.verbose_log( "Invoking grade()...")
             ok_result_tuple = assign.grade()
@@ -202,7 +212,9 @@ def start():
                     args.student_id, args.student_file)
     print rg.get_verbose_log()
     print format_results(rg.result_map)
-
+    
+        
 
 if __name__ == '__main__':
     start()
+        
