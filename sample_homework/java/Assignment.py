@@ -3,6 +3,7 @@ from AssignmentBase import AssignmentBase
 class Assignment(AssignmentBase):
     def __init__(self):
         super(Assignment, self).__init__()
+        print "\n\n ************* You are reading Java Description Central! ***********\n\n"
         self.assignment = "Linked Lists"
         self.lang = "java"
         self.build_command = "javac -classpath junit.jar:. LinkedList.java LinkedListTest.java"

@@ -51,6 +51,9 @@ class Submission(models.Model):
     verbose_output = models.TextField()
     retrograde_output = models.TextField()
 
+    def __unicode__(self):
+        return "Submission '%s' (%d/%d) in %s" % (self.homework.name, self.score, self.possible_score, self.lang)
+
 class SubmissionFile(models.Model):
     submission = models.ForeignKey(Submission)
     contents = models.TextField()

@@ -3,6 +3,8 @@ from AssignmentBase import AssignmentBase
 class Assignment(AssignmentBase):
     def __init__(self):
         super(Assignment, self).__init__()
+        print "\n\n ************ you are reading me, Mr. C++ **********\n\n"
+        self.verbose_log("Reading assignment descriptor in %s" % str(__file__))
         self.assignment = "Linked Lists"
         self.lang = "cpp"
         self.build_command = "make"

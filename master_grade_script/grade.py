@@ -143,12 +143,22 @@ class RetroGrade:
             self.verbose_log( "Appending working dir to sys.path...")
             sys.path.append(self.working_dir)
             self.verbose_log( "Working dir appended. Should be able to import Assignment.")
+            try:
+                del Assignment # unload an old version
+            except:
+                pass
             from Assignment import Assignment
+
             assign = Assignment()
             self.verbose_log( "... got assignment instance.")
             self.verbose_log( "Invoking grade()...")
             ok_result_tuple = assign.grade()
             self.verbose_log(assign.get_verbose_log())
+            sys.path.remove(self.working_dir)
+            self.verbose_log("Removed working dir from sys.path.")
+            self.verbose_log("System path is now:\n" + "\n".join(sys.path))
+            del Assignment
+            self.verbose_log("Removed Assignment from modules")
         except Exception, e:
             traceback.print_exc()
         return ok_result_tuple
