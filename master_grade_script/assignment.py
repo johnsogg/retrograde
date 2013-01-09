@@ -1,15 +1,28 @@
-import os, re, subprocess, sys
+import os, re, subprocess, sys, json
 
-class AssignmentBase(object):
-    def __init__(self):
+
+class Assignment(object):
+    def __init__(self, descriptor_files):
         self.verbose = []
-        self.assignment = "Unknown Assignment"
-        self.lang = "Unknown Language"
-        self.build_command = "echo replace this with your build command string"
-        self.unit_test_command = "echo replace this with your unit test command"
-        self.instructor_files = []
-        self.student_files = []
-        self.points = {}
+        dat = self.check_descriptions(descriptor_files)
+        self.assignment = dat["assignment"]
+        self.lang = dat["lang"]
+        self.build_command = dat["build_command"]
+        self.unit_test_command = dat["unit_test_command"]
+        self.instructor_files = dat["instructor_files"]
+        self.student_files = dat["student_files"]
+        self.points = dat["points"]
+
+    def check_descriptions(self, file_paths):
+        main_dict = {}
+        for f in file_paths:
+            self.verbose_log("Description File: " + f)
+            decoded = json.loads(open(f, 'r').read())
+            for k in decoded.keys():
+                if k in main_dict:
+                    self.verbose_log("Warning: key '%s' duplicated!" % k)
+                main_dict[k] = decoded[k]
+        return main_dict
 
     def verbose_log(self, words):
         self.verbose.append(words)
@@ -46,12 +59,12 @@ class AssignmentBase(object):
 
         if (ok and self.build_command is not None):
             # make linked_list -- need to think about how to extract this
-            ok = self.run([self.build_command], sys.stdout, sys.stderr)
+            ok = self.run([self.build_command], sys.stdout, sys.stderr, "Build command")
 
         if (ok):
             # run linked_list_test
             outfileW = open(outfile_name, "w")
-            self.run([self.unit_test_command], outfileW, sys.stderr)
+            self.run([self.unit_test_command], outfileW, sys.stderr, "Unit Test command")
             outfileW.close()
             outfile = open(outfile_name, "r")
             result, errors = self.parse_for_grade(outfile)
@@ -77,16 +90,20 @@ class AssignmentBase(object):
         return result, ''.join(errors)
 
     def check_for_omitted_tests(self, result):
-        self.verbose_log("check for ommitted tests in the following list:")
+        self.verbose_log("Checking for ommitted tests")
         targetSet = set(self.points.keys())
         inputSet = set(result.keys())
+        ok = True
         if (targetSet != inputSet):
+            ok = False
             self.verbose_log("\n  ******************************************************************")
             self.verbose_log("  * WARNING: Tests performed were not the same as those prescribed.")
             notTested = targetSet.difference(inputSet)
             for thing in notTested:
                 self.verbose_log("  *\tmissing: " + thing)
             self.verbose_log("  ******************************************************************\n")
+        if (ok):
+            self.verbose_log("No tests omitted.")
 
     def get_test_result(self, line, result, errors):
         pattern = "RetroGrade Result >\s*(\w.*):\s(.)"
@@ -118,36 +135,36 @@ class AssignmentBase(object):
         sys.stdout.flush()
         sys.stderr.flush()
 
-    def run(self, args, out, err):
-        self.verbose_log("\nRunning " + " ".join(args) + "...\n")
+    def run(self, args, out, err, desc):
+        self.verbose_log("\nRunning " + desc + ": " + " ".join(args) + "...")
         self.flushall()
         ret = 0 is subprocess.call(args, shell=True, stdout=out, stderr=sys.stderr)
-        self.verbose_log("\n ... return value: " + str(ret) + "\n")
+        self.verbose_log("... return value: " + str(ret) + "\n")
         self.flushall()
         return ret
 
 
-class ExampleAssignment(AssignmentBase):
-    def __init__(self):
-        super(ExampleAssignment, self).__init__()
-        self.assignment = "Example Assignment"
-        self.lang = "cpp"
-        self.instructor_files = [
-            "Makefile",
-            "RetroPrinter.cpp",
-            "RetroPrinter.h",
-            "linked_list.h",
-            "linked_list_test.cpp"
-            ]
-        self.student_files = [
-            "linked_list.cpp"
-            ]
-        self.points = {
-            "Report": 1,
-            "InitNode" : 1,
-            "InsertEmpty" : 1,
-            "InsertStart" : 1,
-            "InsertEnd" : 1,
-            "InsertRedundant" : 1,
-            "Remove" : 4,
-            }
+# class ExampleAssignment(AssignmentBase):
+#     def __init__(self):
+#         super(ExampleAssignment, self).__init__()
+#         self.assignment = "Example Assignment"
+#         self.lang = "cpp"
+#         self.instructor_files = [
+#             "Makefile",
+#             "RetroPrinter.cpp",
+#             "RetroPrinter.h",
+#             "linked_list.h",
+#             "linked_list_test.cpp"
+#             ]
+#         self.student_files = [
+#             "linked_list.cpp"
+#             ]
+#         self.points = {
+#             "Report": 1,
+#             "InitNode" : 1,
+#             "InsertEmpty" : 1,
+#             "InsertStart" : 1,
+#             "InsertEnd" : 1,
+#             "InsertRedundant" : 1,
+#             "Remove" : 4,
+#             }
