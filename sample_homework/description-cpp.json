@@ -1,17 +1,23 @@
 from AssignmentBase import AssignmentBase
-
+ 
 class Assignment(AssignmentBase):
     def __init__(self):
         super(Assignment, self).__init__()
+        print "\n\n ************ you are reading me, Mr. C++ **********\n\n"
+        self.verbose_log("Reading assignment descriptor in %s" % str(__file__))
         self.assignment = "Linked Lists"
-        self.lang = "py"
-        self.build_command = None
-        self.unit_test_command = "python linked_list_test.py"
+        self.lang = "cpp"
+        self.build_command = "make"
+        self.unit_test_command = "./linked_list_test"
         self.instructor_files = [
-            "linked_list_test.py"
+            "Makefile",
+            "RetroPrinter.cpp",
+            "RetroPrinter.h",
+            "linked_list.h",
+            "linked_list_test.cpp"
             ]
         self.student_files = [
-            "linked_list.py"
+            "linked_list.cpp"
             ]
         self.points = {
             "Report": 1,
