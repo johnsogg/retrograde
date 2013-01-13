@@ -15,6 +15,7 @@ class Assignment(object):
 
     def check_descriptions(self, file_paths):
         main_dict = {}
+        print "File paths: " + str(file_paths)
         for f in file_paths:
             self.verbose_log("Description File: " + f)
             decoded = json.loads(open(f, 'r').read())

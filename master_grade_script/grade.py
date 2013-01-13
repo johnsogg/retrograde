@@ -98,10 +98,14 @@ class RetroGrade:
         #                        e.g. $FOO/homework/linked_list
         # instructor_dir      := dir off instructor dir with particular language
         #                        e.g. $FOO/homework/linked_list/cpp
-        self.base_instructor_dir = os.path.join(self.base_assignment_dir, 
+        abs_base_assignment_dir = os.path.abspath(self.base_assignment_dir)
+        self.base_instructor_dir = os.path.join(abs_base_assignment_dir, 
                                                 self.assignment)
         self.instructor_dir = os.path.join(self.base_instructor_dir, self.language)
         is_ins_dir_present = os.path.isdir(self.instructor_dir)
+        if not is_ins_dir_present:
+            self.verbose_log("Instructor dir: " + self.instructor_dir)
+            self.verbose_log("** Instructor dir is NOT present")
         self.description_files = []
         self.description_files.append(os.path.abspath(os.path.join(self.base_instructor_dir, 'description-common.json')))
         self.description_files.append(os.path.abspath(os.path.join(self.instructor_dir, 'description.json')))
@@ -212,7 +216,7 @@ def start():
                     args.student_id, args.student_file)
     print rg.get_verbose_log()
     print format_results(rg.result_map)
-    
+    print "Done"
         
 
 if __name__ == '__main__':
