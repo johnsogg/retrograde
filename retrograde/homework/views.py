@@ -10,7 +10,7 @@ from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404, render
 from django.utils.timezone import utc
 from grade import RetroGrade, extract_score, format_results
-from homework.models import Homework, Course, Submission, SubmissionFile
+from homework.models import Homework, Course, Submission, SubmissionFile, Score
 from tempfile import mkdtemp
 import os
 
@@ -24,12 +24,20 @@ def course(request, course_id):
         upcoming = filter(Homework.is_now, homeworks)
         past = filter(Homework.is_past, homeworks)
         future = filter(Homework.is_future, homeworks)
-        variables['due_now'] = upcoming
-        variables['due_past'] = past
-        variables['due_future'] = future
+        variables['due_now'] = tupleize(upcoming, request.user)
+        variables['due_past'] = tupleize(past, request.user)
+        variables['due_future'] = tupleize(future, request.user)
     return render(request, 'homework/course.html', variables)
-                  
 
+def tupleize(hw_set, user):
+    """
+    Given a bunch of homeworks, produce a list of tuples [(hw,
+    hw.get_score(user)), hw, hw.get_score(user))]
+    """
+    ret = []
+    for hw in hw_set:
+        ret.append((hw, hw.get_score(user)))
+    return ret
 
 @login_required
 def view_specific_assignment(request, hw_id):
@@ -41,7 +49,7 @@ def view_specific_assignment(request, hw_id):
         variables['related'] = hw.resource_set.all()
         # has the student has submitted this homework?
         subs = hw.submission_set.filter(student=request.user)
-        set_best_scores(variables, hw)
+        set_best_scores(variables, request.user, hw)
         variables['subs'] = subs
     else:
         raise Http404
@@ -68,6 +76,7 @@ def submit_homework(request, hw_id):
             sub.possible_score = 0
             sub.verbose_output = "verbose output..."
             sub.retrograde_output = "retrograde output..."
+            sub.on_time = now < hw.due_date
             sub.save()
             print "Saved submission " + str(sub)
             for k in files.keys():
@@ -86,17 +95,20 @@ def submit_homework(request, hw_id):
                 f.save()
             variables['importantMessage'] = "Got the homework"
             do_retrograde_script(sub)
+            if (not sub.on_time): # cap score if late
+                sub.score = min(hw.points_possible_when_late, sub.score)
+                sub.save()
             variables['sub'] = sub
             if (sub.score == sub.possible_score and sub.score > 0):
                 variables['max_score'] = True
         subs = hw.submission_set.filter(student=request.user)
         variables['subs'] = subs
-        set_best_scores(variables, hw)
+        set_best_scores(variables, request.user, hw)
     else:
         raise Http404
     return render(request, 'homework/detail.html', variables)
 
-def set_best_scores(variables, hw):
+def set_best_scores(variables, user, hw):
     """
     This sets several variables: best_X and best_X_full for each
     language, where X is the language name. best_X is the best score
@@ -104,6 +116,9 @@ def set_best_scores(variables, hw):
     tells you if you've maxed out your score.
 
     It also sets normal_score and extra_credit_score, both integers.
+
+    It sets maxed_out to True if the max number of regular points are
+    received.
     """
     best_java = hw.submission_set.filter(lang='java').aggregate(Max('score'))
     valj = hw.submission_set.filter(lang='java').aggregate(Max('possible_score'))
@@ -116,9 +131,11 @@ def set_best_scores(variables, hw):
     if (valj['possible_score__max'] is not None and variables['best_java'] == valj['possible_score__max']):
         variables['best_java_full'] = True
     variables['best_py'] = best_py['score__max'] or 0
+    variables['best_py_full'] = False
     if (valp['possible_score__max'] is not None and variables['best_py'] == valp['possible_score__max']):
         variables['best_py_full'] = True
     variables['best_cpp'] = best_cpp['score__max'] or 0
+    variables['best_cpp_full'] = False
     if (valc['possible_score__max'] is not None and variables['best_cpp'] == valc['possible_score__max']):
         variables['best_cpp_full'] = True
     best_score = max(variables['best_java'], variables['best_py'], variables['best_cpp'])
@@ -126,7 +143,21 @@ def set_best_scores(variables, hw):
     extra_credit_score = sum_score - best_score
     variables['normal_score'] = best_score
     variables['extra_credit_score'] = extra_credit_score
-
+    maxed_out = variables['best_java_full'] or variables['best_py_full'] or variables['best_cpp_full']
+    variables['maxed_out'] = maxed_out
+    score_set = Score.objects.filter(homework=hw, student=user)
+    score = None
+    if (len(score_set) > 0):
+        score = score_set[0]
+    else:
+        score = Score()
+        score.homework = hw
+        score.student = user
+    score.normal_points = best_score
+    score.extra_credit_points = extra_credit_score
+    score.save()
+    variables['score'] = score
+    
 def do_retrograde_script(sub):
     """
     Runs the RetroGrade grading script. This extracts the related

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
-from datetime import date, timedelta
+from datetime import datetime, timedelta
+from django.utils.timezone import utc
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
@@ -15,15 +16,25 @@ class Homework(models.Model):
     name = models.CharField(max_length=100)
     course = models.ForeignKey(Course)
     description = models.TextField()
+    points_possible = models.IntegerField()
+    points_possible_when_late = models.IntegerField()
     pub_date = models.DateTimeField("Date published")
-    due_date = models.DateField()
+    due_date = models.DateTimeField()
 
     def __unicode__(self):
         return self.name
 
+    def get_score(self, user):
+        ret = None
+        score_set = Score.objects.filter(homework=self, student=user)
+        if (len(score_set) > 0):
+            ret = score_set[0]
+        return ret
+
     def is_past(self):
+        print "yo"
         ret = False
-        if date.today() > self.due_date:
+        if self.get_now() > self.due_date:
             ret = True
         return ret
 
@@ -32,14 +43,17 @@ class Homework(models.Model):
         if not self.is_past() and self.is_future():
             td = timedelta(7)
             then = self.due_date - td
-            ret = date.today() > then
+            ret = self.get_now() > then
         return ret
     
     def is_future(self):
         ret = False
-        if date.today() <= self.due_date:
+        if self.get_now() <= self.due_date:
             ret = True
         return ret
+
+    def get_now(self):
+        return datetime.utcnow().replace(tzinfo=utc)
 
 class Submission(models.Model):
     homework = models.ForeignKey(Homework)
@@ -50,9 +64,13 @@ class Submission(models.Model):
     lang = models.CharField(max_length=10)
     verbose_output = models.TextField()
     retrograde_output = models.TextField()
+    on_time = models.BooleanField()
 
     def __unicode__(self):
-        return "Submission '%s' (%d/%d) in %s" % (self.homework.name, self.score, self.possible_score, self.lang)
+        late = ""
+        if not self.on_time:
+            late = "(late)"
+        return "Submission '%s' (%d/%d) in %s %s" % (self.homework.name, self.score, self.possible_score, self.lang, late)
 
 class SubmissionFile(models.Model):
     submission = models.ForeignKey(Submission)
@@ -68,3 +86,20 @@ class Resource(models.Model):
     def __unicode__(self):
         return self.name
 
+class Score(models.Model):
+    """
+    A score is _derived_ data that relates the student, homework, and
+    submission tables. It is updated every time the student turns
+    something in. It is derived to speed up and simplify loading of
+    pages that display summary statistics.
+    """
+    homework = models.ForeignKey(Homework)
+    student = models.ForeignKey(User)
+    normal_points = models.IntegerField()
+    extra_credit_points = models.IntegerField()
+
+    def is_maxed_out(self):
+        return self.normal_points == self.normal_points_possible
+
+    def __unicode__(self):
+        return str(self.normal_points) + " regular points earned, plus " + str(self.extra_credit_points) + " extra credit"

@@ -6,7 +6,7 @@ class ResourceInline(admin.TabularInline):
     extra=3
     
 class HomeworkAdmin(admin.ModelAdmin):
-    fields = ['name', 'course', 'description', 'pub_date', 'due_date']
+    fields = ['name', 'course', 'points_possible', 'points_possible_when_late', 'description', 'pub_date', 'due_date']
     inlines = [ResourceInline]
     list_display = ('name', 'due_date', 'course')
 

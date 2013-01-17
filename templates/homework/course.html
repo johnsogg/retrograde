@@ -16,7 +16,7 @@ Did not find that course. Did you type it correctly?
 <h1>Due Soon</h1>
 <ul>
 {% for hw in due_now %}
-<li><a href="/hw/{{hw.id}}">{{hw}}</a></li>
+<li><a href="/hw/{{hw.0.id}}">{{hw.0}}</a> ({{hw.1}})</li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -25,7 +25,7 @@ Did not find that course. Did you type it correctly?
 <h1>Due In The Future</h1>
 <ul>
 {% for hw in due_future %}
-<li><a href="/hw/{{hw.id}}">{{hw}}</a></li>
+<li><a href="/hw/{{hw.0.id}}">{{hw.0}}</a> ({{hw.1}})</li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -34,7 +34,7 @@ Did not find that course. Did you type it correctly?
 <h1>Due In The Past</h1>
 <ul>
 {% for hw in due_past %}
-<li><a href="/hw/{{hw.id}}">{{hw}}</a></li>
+<li><a href="/hw/{{hw.0.id}}">{{hw.0}}</a> ({{hw.1}})</li>
 {% endfor %}
 </ul>
 {% endif %}

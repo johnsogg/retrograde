@@ -1,6 +1,7 @@
 <div class="nav">
 {% if user.is_authenticated %}
 {{ user }} | 
+<a href="/hw/course/{{user.get_profile.course.id}}">{{ user.get_profile.course }}</a> |
 <a href="/account/logout">Log Out</a>
 {% else %}
 <a href="/account">Log In</a>

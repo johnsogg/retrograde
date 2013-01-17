@@ -12,7 +12,11 @@
 <p>{{ hw.description }}</p>
 
 {% if normal_score %}
-<p>Regular points earned for this assignment: {{ normal_score }}</p>
+<p>Regular points earned for this assignment: {{ normal_score }}
+{% if maxed_out %}
+<span class="cheers">You've owned this assignment!</span>
+{% endif %}
+</p>
 {% endif %}
 
 {% if extra_credit_score %}
@@ -53,7 +57,7 @@
 <p>List o' previous submissions for this homework:</p>
 <ul>
 {% for s in subs %}
-<li><a href="/hw/{{hw.id}}/sub/{{s.id}}">{{ s.submitted_date }} {{ s.score }} / {{ s.possible_score }} {{ s.lang }} </a></li>
+<li><a href="/hw/{{hw.id}}/sub/{{s.id}}">{{ s.submitted_date }}: {{ s }} </a></li>
 {% endfor %}
 </ul>
 {% else %}
@@ -73,6 +77,10 @@
 <p>Submission results:</p>
 
 <p>Score: {{ sub.score }} / {{ sub.possible_score }}
+{% if not sub.on_time %}
+(capped at {{ sub.homework.points_possible_when_late }} because it was late)
+{% endif %}
+</p>
 
 {% if max_score %}
 <p>Yay :)</p>
