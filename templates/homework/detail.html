@@ -11,6 +11,38 @@
 
 <p>{{ hw.description }}</p>
 
+{% if normal_score %}
+<p>Regular points earned for this assignment: {{ normal_score }}</p>
+{% endif %}
+
+{% if extra_credit_score %}
+<p>Extra credit points earned for this assignment: {{ extra_credit_score }}</p>
+{% endif %}
+
+{% if best_java %}
+<p>Best Java Score: {{ best_java }}
+{% if best_java_full %}
+<span class="cheers">Yay!</span>
+{% endif %}
+</p>
+{% endif %}
+
+{% if best_py %}
+<p>Best Python Score: {{ best_py }}
+{% if best_py_full %}
+<span class="cheers">Yay!</span>
+{% endif %}
+</p>
+{% endif %}
+
+{% if best_cpp %}
+<p>Best CPP Score: {{ best_cpp }}
+{% if best_cpp_full %}
+<span class="cheers">Yay!</span>
+{% endif %}
+</p>
+{% endif %}
+
 <ul>
 {% for r in related %}
   <li><a href="{{r.value}}">{{r.name}}: {{r.value}}</a></li>
@@ -31,7 +63,6 @@
 <form name="turn_in_homework" enctype="multipart/form-data" 
       method="POST" action="/hw/{{hw.id}}/submit/">
 {% csrf_token %}
-<p>Sample textbox: <input type="text" name="foo" /></p>
 <p>A file: <input type="file" name="somefile"></p>
 <p>A file: <input type="file" name="somefile2"></p>
 <p>A file: <input type="file" name="somefile3"></p>

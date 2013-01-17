@@ -2,14 +2,10 @@
 # views.py    - homework
 #
 
-"""
-This is a test.
-"""
-
-
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404, render
 from django.utils.timezone import utc
@@ -17,20 +13,6 @@ from grade import RetroGrade, extract_score, format_results
 from homework.models import Homework, Course, Submission, SubmissionFile
 from tempfile import mkdtemp
 import os
-
-# def index(request):
-#     """
-#     Word! Now I can document things and have it show up on some admin
-#     documentation thing. Zany.
-#     """
-
-#     greeting = "This is a fantastic greeting for Sputnik"
-#     return render(request, 'homework/index.html', {
-#     return render_to_response("homework/index.html", {"greeting" : greeting})
-
-# def specific(request, hw_id):
-#     p = get_object_or_404(Homework, pk=hw_id)
-#     return render_to_response('homework/detail.html', {'homework': p})
 
 @login_required
 def course(request, course_id):
@@ -59,6 +41,7 @@ def view_specific_assignment(request, hw_id):
         variables['related'] = hw.resource_set.all()
         # has the student has submitted this homework?
         subs = hw.submission_set.filter(student=request.user)
+        set_best_scores(variables, hw)
         variables['subs'] = subs
     else:
         raise Http404
@@ -108,9 +91,41 @@ def submit_homework(request, hw_id):
                 variables['max_score'] = True
         subs = hw.submission_set.filter(student=request.user)
         variables['subs'] = subs
+        set_best_scores(variables, hw)
     else:
         raise Http404
     return render(request, 'homework/detail.html', variables)
+
+def set_best_scores(variables, hw):
+    """
+    This sets several variables: best_X and best_X_full for each
+    language, where X is the language name. best_X is the best score
+    for that language (an integer), and best_X_full is a boolean that
+    tells you if you've maxed out your score.
+
+    It also sets normal_score and extra_credit_score, both integers.
+    """
+    best_java = hw.submission_set.filter(lang='java').aggregate(Max('score'))
+    valj = hw.submission_set.filter(lang='java').aggregate(Max('possible_score'))
+    best_py = hw.submission_set.filter(lang='py').aggregate(Max('score'))
+    valp = hw.submission_set.filter(lang='py').aggregate(Max('possible_score'))
+    best_cpp = hw.submission_set.filter(lang='cpp').aggregate(Max('score'))
+    valc = hw.submission_set.filter(lang='cpp').aggregate(Max('possible_score'))
+    variables['best_java'] = best_java['score__max'] or 0
+    variables['best_java_full'] = False
+    if (valj['possible_score__max'] is not None and variables['best_java'] == valj['possible_score__max']):
+        variables['best_java_full'] = True
+    variables['best_py'] = best_py['score__max'] or 0
+    if (valp['possible_score__max'] is not None and variables['best_py'] == valp['possible_score__max']):
+        variables['best_py_full'] = True
+    variables['best_cpp'] = best_cpp['score__max'] or 0
+    if (valc['possible_score__max'] is not None and variables['best_cpp'] == valc['possible_score__max']):
+        variables['best_cpp_full'] = True
+    best_score = max(variables['best_java'], variables['best_py'], variables['best_cpp'])
+    sum_score = sum([variables['best_java'], variables['best_py'], variables['best_cpp']])
+    extra_credit_score = sum_score - best_score
+    variables['normal_score'] = best_score
+    variables['extra_credit_score'] = extra_credit_score
 
 def do_retrograde_script(sub):
     """
