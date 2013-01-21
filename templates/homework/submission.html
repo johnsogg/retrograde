@@ -1,0 +1,70 @@
+{% extends "base/index.html" %}
+
+{% block subtitle %}Submission{% endblock subtitle%}
+
+{% block mainHeading %}
+Submission for <a href="/hw/{{ hw.id }}/">{{hw}}</a>: 
+{{ sub.score }} / {{ sub.possible_score }}
+{% if not sub.on_time %}
+(capped because it is late)
+{% endif %}
+{% endblock mainHeading %}
+
+{% block importantMessage %}{% endblock importantMessage %}
+
+{% block content %}
+
+<table>
+  <tr>
+    <td>Student:</td>
+    <td>{{ user.first_name }} {{user.last_name}}</td>
+  </tr>
+  <tr>
+    <td>Email on file:</td>
+    <td>{{ user.email }}</td>
+  </tr>
+  <tr>
+    <td>CU Student ID:</td>
+    <td>{{ user.cu_id }} </td>
+  </tr>
+  <tr>
+    <td>Assignment:</td>
+    <td>{{ hw.name }}</td>
+  </tr>
+  <tr>
+    <td>Course:</td>
+    <td>{{ hw.course.course_code }}</td>
+  </tr>
+  <tr>
+    <td>Score:</td>
+    <td>{{ sub.score }} out of {{ sub.possible_score }}</td>
+  </tr>
+  <tr>
+    <td>Language:</td>
+    <td>{{ sub.lang }}</td>
+  </tr>
+  <tr>
+    <td>On Time?</td>
+    <td>{{ sub.on_time }}</td>
+  </tr>
+  <tr>
+    <td>When Submitted:</td>
+    <td>{{ sub.submitted_date }}</td>
+  </tr>
+</table>
+
+<h1>Score Information</h1>
+
+<div class="verbose">
+{{ sub.retrograde_output }}
+</div>
+
+<h1>Verbose Output</h1>
+<p><i>Look here to see details about what went wrong. If you're lucky,
+you'll be enlightened.</i></p>
+<div class="verbose">
+{{ sub.verbose_output }}
+</div>
+
+
+{% endblock content %}

@@ -65,6 +65,7 @@ def submit_homework(request, hw_id):
         files = request.FILES
         print "Student " + str(request.user) + " has uploaded " + \
             str(len(files.keys())) + " files for " + str(hw.name)
+        this_sub = None
         if (len(files.keys()) > 0):
             # There are files, so create a submission with files.
             now = datetime.utcnow().replace(tzinfo=utc)
@@ -99,11 +100,14 @@ def submit_homework(request, hw_id):
                 sub.score = min(hw.points_possible_when_late, sub.score)
                 sub.save()
             variables['sub'] = sub
+            this_sub = sub
             if (sub.score == sub.possible_score and sub.score > 0):
                 variables['max_score'] = True
         subs = hw.submission_set.filter(student=request.user)
         variables['subs'] = subs
         set_best_scores(variables, request.user, hw)
+        if (this_sub):
+            return view_specific_submission(request, hw.id, this_sub.id)
     else:
         raise Http404
     return render(request, 'homework/detail.html', variables)
@@ -120,12 +124,12 @@ def set_best_scores(variables, user, hw):
     It sets maxed_out to True if the max number of regular points are
     received.
     """
-    best_java = hw.submission_set.filter(lang='java').aggregate(Max('score'))
-    valj = hw.submission_set.filter(lang='java').aggregate(Max('possible_score'))
-    best_py = hw.submission_set.filter(lang='py').aggregate(Max('score'))
-    valp = hw.submission_set.filter(lang='py').aggregate(Max('possible_score'))
-    best_cpp = hw.submission_set.filter(lang='cpp').aggregate(Max('score'))
-    valc = hw.submission_set.filter(lang='cpp').aggregate(Max('possible_score'))
+    best_java = hw.submission_set.filter(student=user, lang='java').aggregate(Max('score'))
+    valj = hw.submission_set.filter(student=user, lang='java').aggregate(Max('possible_score'))
+    best_py = hw.submission_set.filter(student=user, lang='py').aggregate(Max('score'))
+    valp = hw.submission_set.filter(student=user, lang='py').aggregate(Max('possible_score'))
+    best_cpp = hw.submission_set.filter(student=user, lang='cpp').aggregate(Max('score'))
+    valc = hw.submission_set.filter(student=user, lang='cpp').aggregate(Max('possible_score'))
     variables['best_java'] = best_java['score__max'] or 0
     variables['best_java_full'] = False
     if (valj['possible_score__max'] is not None and variables['best_java'] == valj['possible_score__max']):
@@ -175,7 +179,7 @@ def do_retrograde_script(sub):
         print "student_files is now: " + str(student_files)
     hw = sub.homework
     rg = RetroGrade(settings.RETROGRADE_INSTRUCTOR_PATH,
-                    hw.name,
+                    hw.instructor_dir,
                     sub.student.email,
                     student_files)
     score, possible = extract_score(rg.result_map)
@@ -189,7 +193,20 @@ def do_retrograde_script(sub):
     sub.possible_score = possible
     sub.save()
     # print pretty
-    
-# usage: grade.py [-h]
-#                instructor_dir assignment student_id student_file
-#                [student_file ...]
+
+@login_required
+def view_specific_submission(request, hw_id, sub_id):
+    variables = { 'user' : request.user }
+    sub = Submission.objects.get(pk=sub_id)
+    if (sub is None):
+        raise Http404
+    hw = Homework.objects.get(pk=hw_id)
+    if (hw is None):
+        raise Http404
+    # ensure this user is allowed to see this submission
+    if (sub.student == request.user):
+        variables['sub'] = sub
+        variables['hw'] = hw
+    else:
+        variables['importantMessage'] = 'You don\'t have permission to see that.'
+    return render(request, 'homework/submission.html', variables)

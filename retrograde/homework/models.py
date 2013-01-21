@@ -13,7 +13,10 @@ class Course(models.Model):
         return self.course_code
 
 class Homework(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, 
+                            help_text='Human-readable name of assignment')
+    instructor_dir = models.CharField(max_length=40, 
+                                      help_text='Directory on disk with this assignment\'s description-common.json')
     course = models.ForeignKey(Course)
     description = models.TextField()
     points_possible = models.IntegerField()
@@ -32,7 +35,6 @@ class Homework(models.Model):
         return ret
 
     def is_past(self):
-        print "yo"
         ret = False
         if self.get_now() > self.due_date:
             ret = True

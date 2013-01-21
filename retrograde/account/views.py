@@ -26,28 +26,7 @@ def index(request):
             if form.is_valid():
                 formemail = form.cleaned_data['email']
                 password = form.cleaned_data['password']
-                user = authenticate(username=formemail, password=password)
-                if user is None:
-                    print "Couldn't log you in."
-                    error = "Account name isn't in the database."
-                    if User.objects.filter(username=formemail).exists():
-                        error = "Account checks out, but that's the wrong password."
-                    else:
-                        form = LogInForm() # resets 'form'
-                    return render(request,
-                                  'account/log_in.html', {
-                            'importantMessage' : error,
-                            'form' : form,
-                            })
-                else:
-                    print "Got correct credentials."
-                    login(request, user)
-                    return render(request,
-                                  'account/view-account.html', {
-                            'user' : request.user,
-                            'importantMessage' : 'You are logged in',
-                            'course' : request.user.get_profile().course,
-                            })
+                return log_user_in(request, formemail, password)
             else:
                 print "Got invalid data."
         else:
@@ -55,6 +34,30 @@ def index(request):
 
         return render(request, 'account/log_in.html', 
                       { 'form' : form })
+
+def log_user_in(request, formemail, password):
+    user = authenticate(username=formemail, password=password)
+    if user is None:
+        print "Couldn't log you in."
+        error = "Account name isn't in the database."
+        if User.objects.filter(username=formemail).exists():
+            error = "Account checks out, but that's the wrong password."
+        else:
+            form = LogInForm() # resets 'form'
+            return render(request,
+                          'account/log_in.html', {
+                    'importantMessage' : error,
+                    'form' : form,
+                    })
+    else:
+        print "Got correct credentials."
+        login(request, user)
+        return render(request,
+                      'account/view-account.html', {
+                'user' : request.user,
+                'importantMessage' : 'You are logged in',
+                'course' : request.user.get_profile().course,
+                })
 
 
 def create(request):
@@ -65,6 +68,7 @@ def create(request):
             password = form.cleaned_data['password']
             firstName = form.cleaned_data['firstName']
             lastName = form.cleaned_data['lastName']
+            cu_id = form.cleaned_data['cu_id']
             course = form.cleaned_data['course']
             print "Make account for %s %s <%s> (password hidden)" % (
                 firstName, lastName, formemail)
@@ -81,11 +85,10 @@ def create(request):
                 retroUser = RetroUser()
                 retroUser.user = newUser
                 retroUser.course = course
-#                retroUser.firstName = firstName
-#                retroUser.lastName = lastName
+                retroUser.cu_id = cu_id
                 retroUser.save()
-                return HttpResponseRedirect("/account/")
-
+                #return HttpResponseRedirect("/account/thanks")
+                return log_user_in(request, formemail, password)
     else:
         form = CreateAccountForm() # unbound, clean form
 
@@ -96,3 +99,4 @@ def create(request):
 def log_out(request):
     logout(request)
     return HttpResponseRedirect("/account/")
+
