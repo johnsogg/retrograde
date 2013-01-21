@@ -160,6 +160,8 @@ class RetroGrade:
 
         except Exception, e:
             traceback.print_exc()
+            self.verbose_log("Got exception:")
+            self.verbose_log(str(e))
         return ok_result_tuple
 
 

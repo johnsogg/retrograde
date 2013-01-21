@@ -18,11 +18,15 @@ class Assignment(object):
         print "File paths: " + str(file_paths)
         for f in file_paths:
             self.verbose_log("Description File: " + f)
-            decoded = json.loads(open(f, 'r').read())
-            for k in decoded.keys():
-                if k in main_dict:
-                    self.verbose_log("Warning: key '%s' duplicated!" % k)
-                main_dict[k] = decoded[k]
+            try:
+                decoded = json.loads(open(f, 'r').read())
+                for k in decoded.keys():
+                    if k in main_dict:
+                        self.verbose_log("Warning: key '%s' duplicated!" % k)
+                    main_dict[k] = decoded[k]
+            except Exception as e:
+                self.verbose_log("Got exception when unpacking JSON descriptor. Stray comma? Missing comma? Gotta watch out for those commas.")
+                self.verbose_log("Bad descriptor file: " + str(f))
         return main_dict
 
     def verbose_log(self, words):
@@ -60,16 +64,30 @@ class Assignment(object):
 
         if (ok and self.build_command is not None):
             # make linked_list -- need to think about how to extract this
-            ok = self.run([self.build_command], sys.stdout, sys.stderr, "Build command")
+            ok = self.run_redirect_output([self.build_command], "build-output", "Build command")
+        if (not ok):
+            self.verbose_log("build command failed. ok is " + str(ok))
 
         if (ok):
             # run linked_list_test
-            outfileW = open(outfile_name, "w")
-            self.run([self.unit_test_command], outfileW, sys.stderr, "Unit Test command")
-            outfileW.close()
-            outfile = open(outfile_name, "r")
-            result, errors = self.parse_for_grade(outfile)
-            self.check_for_omitted_tests(result)
+            try:
+                outfileW = open(outfile_name, "w")
+                errfileW = open("error-text", "w")
+                self.run([self.unit_test_command], outfileW, errfileW, "Unit Test command")
+                outfileW.close()
+                errfileW.close()
+                outfile = open(outfile_name, "r")
+                errfile = open("error-text", "r")
+                self.verbose_log(errfile.read())
+                errfile.close()
+                result, errors = self.parse_for_grade(outfile)
+                self.check_for_omitted_tests(result)
+                self.verbose_log("Completed unit test command.")
+                self.verbose_log("result: " + str(result))
+                self.verbose_log("errors: " + str(errors))
+                self.verbose_log("Done reporting result and errors.")
+            except Exception as e:
+                self.verbose_log("Got Exception during unit test run: " + str(e))
 
         if len(result) > 0:
             # print_results(result)
@@ -136,10 +154,19 @@ class Assignment(object):
         sys.stdout.flush()
         sys.stderr.flush()
 
+    def run_redirect_output(self, args, out, desc):
+        outfile = open(out, "w")
+        ret = self.run(args, outfile, outfile, desc);
+        outfile.close()
+        outfileR = open(out, "r")
+        self.verbose_log(outfileR.read())
+        outfileR.close()
+        return ret
+
     def run(self, args, out, err, desc):
         self.verbose_log("\nRunning " + desc + ": " + " ".join(args) + "...")
         self.flushall()
-        ret = 0 is subprocess.call(args, shell=True, stdout=out, stderr=sys.stderr)
+        ret = 0 is subprocess.call(args, shell=True, stdout=out, stderr=err)
         self.verbose_log("... return value: " + str(ret) + "\n")
         self.flushall()
         return ret
