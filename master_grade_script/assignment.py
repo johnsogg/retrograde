@@ -1,4 +1,14 @@
-import os, re, subprocess, sys, json
+import os, re, subprocess, sys, json, signal
+
+# this is used to detect long-running scripts
+class TakingTooLong(Exception):
+    pass
+
+# alarm handler hooked up to signal.SIGALRM to raise
+# TakingTooLong when a script takes its sweet time.
+# this is infinite-loop avoidance.
+def alarm_handler(signum, frame):
+    raise TakingTooLong
 
 
 class Assignment(object):
@@ -63,13 +73,15 @@ class Assignment(object):
             self.verbose_log("Student file(s) in place.")
 
         if (ok and self.build_command is not None):
-            # make linked_list -- need to think about how to extract this
+            # run the build command
+            print "Running build command:"
+            print self.build_command
             ok = self.run_redirect_output([self.build_command], "build-output", "Build command")
         if (not ok):
             self.verbose_log("build command failed. ok is " + str(ok))
 
         if (ok):
-            # run linked_list_test
+            # run the unit test
             try:
                 outfileW = open(outfile_name, "w")
                 errfileW = open("error-text", "w")
@@ -166,7 +178,22 @@ class Assignment(object):
     def run(self, args, out, err, desc):
         self.verbose_log("\nRunning " + desc + ": " + " ".join(args) + "...")
         self.flushall()
-        ret = 0 is subprocess.call(args, shell=True, stdout=out, stderr=err)
+        # proc = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(args,
+                                stderr=err, #subprocess.STDOUT,
+                                stdout=out, # subprocess.PIPE,
+                                shell=True)
+        try:
+            signal.signal(signal.SIGALRM, alarm_handler)
+            signal.alarm(10)
+            stdoutdata, stderrdata = proc.communicate() # wait to complete or alarm to trigger
+            signal.alarm(0) # clear alarm
+            ret = proc.returncode is 0
+        except TakingTooLong:
+            pid = proc.pid
+            proc.kill()
+            self.verbose_log("COMMAND TOOK TOO LONG. Infinite Loop? Killed pid " + str(pid))
+            ret = False
         self.verbose_log("... return value: " + str(ret) + "\n")
         self.flushall()
         return ret

@@ -1,6 +1,6 @@
 {
     "lang" : "py",
-    "build_command" : "",
+    "build_command" : "python -m py_compile linked_list_test.py",
     "unit_test_command" : "python linked_list_test.py",
     "instructor_files" : [
         "linked_list_test.py"
