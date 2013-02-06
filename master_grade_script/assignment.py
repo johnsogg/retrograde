@@ -12,6 +12,11 @@ def alarm_handler(signum, frame):
 
 
 class Assignment(object):
+
+    FLAMING_ERROR_COMPILE = "Compilation Error"
+    FLAMING_ERROR_INFINITE = "Infinite Loop"
+    FLAMING_ERROR_RUNTIME = "Premature Runtime Exit"
+
     def __init__(self, descriptor_files):
         self.verbose = []
         dat = self.check_descriptions(descriptor_files)
@@ -22,6 +27,7 @@ class Assignment(object):
         self.instructor_files = dat["instructor_files"]
         self.student_files = dat["student_files"]
         self.points = dat["points"]
+        self.flaming_errors = [] # list of FlamingError
 
     def check_descriptions(self, file_paths):
         main_dict = {}
@@ -53,6 +59,8 @@ class Assignment(object):
         self.verbose_log("Language: " + self.lang)
         self.verbose_log("Points Possible: " + str(self.get_total_points()))
         ok = True;
+        # 'result' is a dictionary that maps question keys (like 'InsertData')
+        # to a tuple. The tuple is (actual_score, maximum_score).
         result = {}
         errors = ""
         outfile_name = "unit_test_output.txt"
@@ -174,6 +182,7 @@ class Assignment(object):
         self.verbose_log(outfileR.read())
         outfileR.close()
         return ret
+
 
     def run(self, args, out, err, desc):
         self.verbose_log("\nRunning " + desc + ": " + " ".join(args) + "...")
