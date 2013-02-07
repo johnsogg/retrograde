@@ -173,10 +173,10 @@ def do_retrograde_script(sub):
     student_files = []
     for f in file_objects:
         student_file = os.path.join(tmp, f.file_name);
-        # writeme = open(student_file, 'w')
-        writeme = codecs.open(student_file, encoding='utf-8')
-        writeme.write(f.contents)
-        writeme.close()
+        with open(student_file, 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+            destination.close()
         student_files.append(student_file)
         print "student_files is now: " + str(student_files)
     hw = sub.homework
