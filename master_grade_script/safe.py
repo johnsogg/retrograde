@@ -3,6 +3,7 @@
 import signal
 import subprocess
 from sys import argv, exit, stdout
+import os
 
 class TakingTooLong(Exception):
     pass
@@ -26,9 +27,14 @@ def run_thing(cmd):
         signal.alarm(0)
     except TakingTooLong:
         print "Process took too long. Killing it."
+        # Wisdom from http://stackoverflow.com/questions/4789837/how-to-terminate-a-python-subprocess-launched-with-shell-true
+        # says I should kill process using the os.killpg (stands for kill process group)
+        # This is because my process is the shell (shell=True). Killing the group kills
+        # all child processes as well (and what I need is the child process).
         pid = proc.pid
-        proc.kill()
-        print "Killed process " + str(pid)
+        # proc.kill()
+        os.killpg(pid, signal.SIGKILL)
+        print "Killed process group starting with " + str(pid)
         rc = -1
     return rc
 
