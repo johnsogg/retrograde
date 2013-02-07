@@ -50,5 +50,8 @@ RETROGRADE_MODULE_PATH = os.path.join(RETROGRADE_BASE_PATH, 'master_grade_script
 
 RETROGRADE_INSTRUCTOR_PATH = os.path.join(RETROGRADE_BASE_PATH, '')
 
+# location of safe.py. make sure it is executable
+RETROGRADE_RUN_SAFELY_PROG = '/home/gabe/safe.py'
+
 sys.path.append(RETROGRADE_MODULE_PATH)
 
