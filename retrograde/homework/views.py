@@ -2,6 +2,7 @@
 # views.py    - homework
 #
 
+import codecs
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -172,7 +173,8 @@ def do_retrograde_script(sub):
     student_files = []
     for f in file_objects:
         student_file = os.path.join(tmp, f.file_name);
-        writeme = open(student_file, 'w')
+        # writeme = open(student_file, 'w')
+        writeme = codecs.open(student_file, encoding='utf-8')
         writeme.write(f.contents)
         writeme.close()
         student_files.append(student_file)
