@@ -90,7 +90,10 @@ def submit_homework(request, hw_id):
                 print "\tFile: " + str(k) + " = " + str(v.name) + \
                     "(" + str(v.size) + " bytes)"
                 buf = []
-                for line in v:
+                # for line in v:
+                #     buf.append(line)
+                for chunk in v.chunks():
+                    line = unicode(chunk, errors='ignore')
                     buf.append(line)
                 text = "".join(buf)
                 f.contents = text
@@ -173,10 +176,9 @@ def do_retrograde_script(sub):
     student_files = []
     for f in file_objects:
         student_file = os.path.join(tmp, f.file_name);
-        with open(student_file, 'wb+') as destination:
-            for chunk in f.chunks():
-                destination.write(chunk)
-            destination.close()
+        writeme = open(student_file, 'w')
+        writeme.write(f.contents)
+        writeme.close()
         student_files.append(student_file)
         print "student_files is now: " + str(student_files)
     hw = sub.homework
