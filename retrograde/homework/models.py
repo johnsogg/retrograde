@@ -67,6 +67,7 @@ class Submission(models.Model):
     verbose_output = models.TextField()
     retrograde_output = models.TextField()
     on_time = models.BooleanField()
+    flaming_error = models.CharField(max_length=20)
 
     def __unicode__(self):
         late = ""

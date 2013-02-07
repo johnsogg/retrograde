@@ -189,6 +189,7 @@ def do_retrograde_script(sub):
     sub.verbose_output = verbose
     sub.retrograde_output = pretty
     sub.lang = rg.language
+    sub.flaming_error = rg.flaming_error or ''
     sub.score = score
     sub.possible_score = possible
     sub.save()

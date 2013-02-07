@@ -25,7 +25,7 @@ Submission for <a href="/hw/{{ hw.id }}/">{{hw}}</a>:
   </tr>
   <tr>
     <td>CU Student ID:</td>
-    <td>{{ user.cu_id }} </td>
+    <td>{{ user.get_profile.cu_id }} </td>
   </tr>
   <tr>
     <td>Assignment:</td>
@@ -52,6 +52,10 @@ Submission for <a href="/hw/{{ hw.id }}/">{{hw}}</a>:
     <td>{{ sub.submitted_date }}</td>
   </tr>
 </table>
+
+{% if sub.flaming_error %}
+<h1>Critical Problem: {{ sub.flaming_error }}</h1>
+{% endif %}
 
 <h1>Score Information</h1>
 

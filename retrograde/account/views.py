@@ -42,6 +42,12 @@ def log_user_in(request, formemail, password):
         error = "Account name isn't in the database."
         if User.objects.filter(username=formemail).exists():
             error = "Account checks out, but that's the wrong password."
+            form = LogInForm() # resets 'form'
+            return render(request,
+                          'account/log_in.html', {
+                    'importantMessage' : error,
+                    'form' : form,
+                    })                          
         else:
             form = LogInForm() # resets 'form'
             return render(request,

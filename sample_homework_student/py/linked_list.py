@@ -22,7 +22,7 @@ def report(root):
     while (cursor.next is not None):
         sb.append(str(cursor.next.data))
         # intentionally make infinite loop by commenting out next line
-        cursor = cursor.next 
+        # cursor = cursor.next 
     ret = " ".join(sb)
     return ret
 

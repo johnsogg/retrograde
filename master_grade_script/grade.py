@@ -38,6 +38,7 @@ class RetroGrade:
             self.files = files
             self.language = RetroGrade.LANG_UNKNOWN
             self.report_input()
+            self.flaming_error = ""
             ok = True
             if (ok):
                 ok = self.determine_language()
@@ -51,6 +52,7 @@ class RetroGrade:
                 self.result_map = ok_result_tuple[1]
                 self.unit_test_errors = ok_result_tuple[2]
                 self.output_path = ok_result_tuple[3]
+                self.flaming_error = ok_result_tuple[4]
         except:
             print "\n\nGot exception (see above). RetroGrade verbose log:"
             print self.get_verbose_log()
@@ -145,7 +147,13 @@ class RetroGrade:
 
     def invoke_grade_script(self):
         self.verbose_log( "Invoking grade script")
-        ok_result_tuple = (False, {})
+        # ok_result_tuple has the following elements:
+        # 0. ok or not-ok
+        # 1. result dict of tests/points
+        # 2. errors. a string?
+        # 3. final path for debugging
+        # 4. flaming error, hopfully not though.
+        ok_result_tuple = (False, {}, None, None, None)
         try:
             self.verbose_log( "Changing directory to " + self.working_dir)
             os.chdir(self.working_dir)

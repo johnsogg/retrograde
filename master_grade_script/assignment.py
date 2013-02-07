@@ -1,4 +1,6 @@
 import os, re, subprocess, sys, json, signal
+from django.conf import settings
+
 
 # this is used to detect long-running scripts
 class TakingTooLong(Exception):
@@ -14,8 +16,7 @@ def alarm_handler(signum, frame):
 class Assignment(object):
 
     FLAMING_ERROR_COMPILE = "Compilation Error"
-    FLAMING_ERROR_INFINITE = "Infinite Loop"
-    FLAMING_ERROR_RUNTIME = "Premature Runtime Exit"
+    FLAMING_ERROR_RUNTIME = "Runtime error or Infinite Loop"
 
     def __init__(self, descriptor_files):
         self.verbose = []
@@ -27,7 +28,7 @@ class Assignment(object):
         self.instructor_files = dat["instructor_files"]
         self.student_files = dat["student_files"]
         self.points = dat["points"]
-        self.flaming_errors = [] # list of FlamingError
+        self.flaming_error = None
 
     def check_descriptions(self, file_paths):
         main_dict = {}
@@ -84,16 +85,27 @@ class Assignment(object):
             # run the build command
             print "Running build command:"
             print self.build_command
-            ok = self.run_redirect_output([self.build_command], "build-output", "Build command")
+            return_code = self.run_redirect_output([self.build_command], 
+                                                   "build-output", "Build command")
+            ok = return_code is 0
         if (not ok):
-            self.verbose_log("build command failed. ok is " + str(ok))
+            self.verbose_log("Build command failed.")
+            self.flaming_error = Assignment.FLAMING_ERROR_COMPILE
+        else:
+            self.verbose_log("Compiled OK")
 
         if (ok):
             # run the unit test
             try:
                 outfileW = open(outfile_name, "w")
                 errfileW = open("error-text", "w")
-                self.run([self.unit_test_command], outfileW, errfileW, "Unit Test command")
+                unit_test_result = self.run([self.unit_test_command], 
+                                            outfileW, errfileW, "Unit Test command")
+                if unit_test_result is not 0:
+                    self.verbose_log("Got runtime error or detected infinite loop.")
+                    self.flaming_error = Assignment.FLAMING_ERROR_RUNTIME;
+                else:
+                    self.verbose_log("Unit test completed normally.")
                 outfileW.close()
                 errfileW.close()
                 outfile = open(outfile_name, "r")
@@ -118,7 +130,7 @@ class Assignment(object):
         final_path = os.path.abspath(joined)
         self.verbose_log(errors)
         self.verbose_log("Output is in the file: " + final_path)
-        return (ok, result, errors, final_path)
+        return (ok, result, errors, final_path, self.flaming_error)
 
     def parse_for_grade(self, outfile):
         self.verbose_log("Parsing outfile...")
@@ -185,27 +197,14 @@ class Assignment(object):
 
 
     def run(self, args, out, err, desc):
-        self.verbose_log("\nRunning " + desc + ": " + " ".join(args) + "...")
+        command = settings.RETROGRADE_RUN_SAFELY_PROG + " " + args[0]
+        self.verbose_log("\n************ Running " + command + "...")
         self.flushall()
         # proc = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        proc = subprocess.Popen(args,
-                                stderr=err, #subprocess.STDOUT,
-                                stdout=out, # subprocess.PIPE,
-                                shell=True)
-        try:
-            signal.signal(signal.SIGALRM, alarm_handler)
-            signal.alarm(10)
-            stdoutdata, stderrdata = proc.communicate() # wait to complete or alarm to trigger
-            signal.alarm(0) # clear alarm
-            ret = proc.returncode is 0
-        except TakingTooLong:
-            pid = proc.pid
-            proc.kill()
-            self.verbose_log("COMMAND TOOK TOO LONG. Infinite Loop? Killed pid " + str(pid))
-            ret = False
-        self.verbose_log("... return value: " + str(ret) + "\n")
+        throwaway = subprocess.Popen(command, stderr=err, stdout=out, shell=True)
+        rc = throwaway.wait()
         self.flushall()
-        return ret
+        return rc
 
 
 # class ExampleAssignment(AssignmentBase):
