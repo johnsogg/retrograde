@@ -128,7 +128,7 @@ class Assignment(object):
             ok = False
         joined = os.path.join('.', outfile_name)
         final_path = os.path.abspath(joined)
-        self.verbose_log(errors)
+        # self.verbose_log(errors)
         self.verbose_log("Output is in the file: " + final_path)
         return (ok, result, errors, final_path, self.flaming_error)
 
