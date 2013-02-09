@@ -3,6 +3,7 @@ from django.db import models
 from datetime import datetime, timedelta
 from django.utils.timezone import utc
 
+
 class Course(models.Model):
     name = models.CharField(max_length=100)
     course_code = models.CharField(max_length=9)
@@ -11,6 +12,13 @@ class Course(models.Model):
 
     def __unicode__(self):
         return self.course_code
+
+class TeachingAssistant(models.Model):
+    name = models.CharField(max_length=100)
+    course = models.ForeignKey(Course)
+
+    def __unicode__(self):
+        return self.name
 
 class Homework(models.Model):
     name = models.CharField(max_length=100, 
@@ -106,3 +114,18 @@ class Score(models.Model):
 
     def __unicode__(self):
         return str(self.normal_points) + " regular points earned, plus " + str(self.extra_credit_points) + " extra credit"
+
+class Exam(models.Model):
+    name = models.CharField(max_length=100)
+    course = models.ForeignKey(Course)
+    max_points = models.IntegerField()
+    exam_date = models.DateField()
+    
+    def __unicode__(self):
+        return self.name + " (" + self.course.course_code + ")"
+
+class ExamResult(models.Model):
+    exam = models.ForeignKey(Exam)
+    student = models.ForeignKey(User)
+    score = models.IntegerField()
+    ta = models.ForeignKey(TeachingAssistant)
