@@ -128,4 +128,10 @@ class ExamResult(models.Model):
     exam = models.ForeignKey(Exam)
     student = models.ForeignKey(User)
     score = models.IntegerField()
-    ta = models.ForeignKey(TeachingAssistant)
+    ta = models.ForeignKey(TeachingAssistant, null=True)
+    recorded_first_name = models.CharField(max_length=100)
+    recorded_last_name = models.CharField(max_length=100)
+    recorded_student_id = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.recorded_first_name + " " + self.recorded_last_name + "<" + self.recorded_student_id + ">: " + str(score) + " points"

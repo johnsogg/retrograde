@@ -1,0 +1,58 @@
+{% extends "base/index.html" %}
+
+{% block subtitle %}{% endblock subtitle%}
+
+{% block mainHeading %}{% endblock mainHeading %}
+
+{% block content %}
+
+<form name="exam" method="post">
+  {% csrf_token %}
+  <table>
+    {% for field in form.visible_fields %}
+    <div class="fieldWrapper">
+      <tr>
+	<td>{{ field.label_tag }}:</td>
+	<td>{{ field }}</td>
+	<td>{{ field.errors }}</td>
+      </tr>
+    </div>
+    {% endfor %}
+    <tr>
+      <td></td>
+      <td><input type="submit" /></td>
+      <td></td>
+    </tr>
+  </table>
+</form>
+
+<h1>Records for Exam</h1>
+
+<p>Number of recorded scores: <b>{{ how_many}} </b> </p>
+
+<p>Average score: <b>{{ avg }} </b> </p>
+
+<p>Min score: <b>{{ worst }} </b> </p>
+
+<p>Max score: <b>{{ best }} </b> </p>
+
+<table>
+<tr>
+  <th>First</th>
+  <th>Last</th>
+  <th>Student ID</th>
+  <th>TA</th>
+  <th>Score</th>
+</tr>
+{% for result in all_results %}
+<tr>
+  <td>{{ result.recorded_first_name }}</td>
+  <td>{{ result.recorded_last_name }}</td>
+  <td>{{ result.student.get_profile.cu_id }}</td>
+  <td>{{ result.ta }} </td>
+  <td><b>{{ result.score }}</b></td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock content %}

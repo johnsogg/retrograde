@@ -3,15 +3,17 @@
 #
 
 import codecs
+from account.models import RetroUser
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Max
+from django.db.models import Max, Avg, Min, StdDev
 from django.http import Http404
 from django.shortcuts import render_to_response, get_object_or_404, render
 from django.utils.timezone import utc
 from grade import RetroGrade, extract_score, format_results
-from homework.models import Homework, Course, Submission, SubmissionFile, Score
+from homework.models import Homework, Course, Submission, SubmissionFile, Score, Exam, ExamResult
+from homework.forms import GradeExamForm
 from tempfile import mkdtemp
 import os
 
@@ -215,3 +217,65 @@ def view_specific_submission(request, hw_id, sub_id):
     else:
         variables['importantMessage'] = 'You don\'t have permission to see that.'
     return render(request, 'homework/submission.html', variables)
+
+@login_required
+def view_exam(request, course_id, exam_id):
+    variables = { 'user' : request.user }
+    if not request.user.is_staff:
+        variables['importantMessage'] = "You need to be a TA or Instructor."
+    else:
+        course = Course.objects.get(pk=course_id)
+        exam = Exam.objects.get(pk=exam_id)
+        variables['course'] = course
+        variables['exam'] = exam
+        if request.method == 'POST':
+            print "Got post."
+            form = GradeExamForm(request.POST)
+            variables['form'] = form
+            if form.is_valid():
+                first = form.cleaned_data['firstName']
+                last = form.cleaned_data['lastName']
+                cu_id = form.cleaned_data['cu_id']
+                score = form.cleaned_data['score']
+                recorded_course = form.cleaned_data['course']
+                ta = form.cleaned_data['ta']
+                try:
+                    exam_result = insert_grade(exam, first, last, cu_id, score, recorded_course, ta)
+                    print "worked"
+                    variables['exam_result'] = exam_result
+                    form = GradeExamForm(initial={'course' : course})                
+                    variables['importantMessage'] = "Added score for " + first + " " + last + " = " + str(score)
+                    variables['form'] = form # reset for next go.
+                except Exception as ex:
+                    variables['importantMessage'] = "WHAT?"
+            else:
+                variables['importantMessage'] = "Got invalid data."
+        else:
+            print "Got non-post"
+            form = GradeExamForm(initial={'course' : course})
+            variables['form'] = form
+
+        all_results = ExamResult.objects.filter(exam=exam)
+        variables['all_results'] = all_results
+        how_many = all_results.count()
+        variables['how_many'] = how_many
+        worst = all_results.aggregate(Min('score'), Max('score'), Avg('score'))
+        variables['worst'] = worst['score__min']
+        variables['best'] = worst['score__max']
+        variables['avg'] = worst['score__avg']
+
+    return render(request, 'homework/exam_all.html', variables)
+
+def insert_grade(exam, first, last, cu_id, score, recorded_course, ta):
+    retro = RetroUser.objects.get(cu_id=cu_id)
+    student = retro.user
+    exam_result = ExamResult()
+    exam_result.exam = exam
+    exam_result.student = student
+    exam_result.recorded_first_name = first
+    exam_result.recorded_last_name = last
+    exam_result.recorded_student_id = cu_id
+    exam_result.score = score
+    exam_result.ta = ta
+    exam_result.save()
+    return exam_result
