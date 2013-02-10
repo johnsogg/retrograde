@@ -18,3 +18,8 @@ class LogInForm(forms.Form):
     email = forms.EmailField(label="Email Address")
     password = forms.CharField(widget=forms.PasswordInput(render_value=False),
                                label="Password")
+
+class LookupForm(forms.Form):
+    first = forms.CharField(label="First Name", required=False)
+    last = forms.CharField(label="Last Name", required=False)
+    sid =  forms.CharField(label="Student ID", required=False)

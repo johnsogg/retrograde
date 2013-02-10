@@ -15,6 +15,7 @@ from grade import RetroGrade, extract_score, format_results
 from homework.models import Homework, Course, Submission, SubmissionFile, Score, Exam, ExamResult
 from homework.forms import GradeExamForm
 from tempfile import mkdtemp
+from account.views import get_all_user_matches
 import os
 
 @login_required
@@ -182,7 +183,6 @@ def do_retrograde_script(sub):
         writeme.write(f.contents)
         writeme.close()
         student_files.append(student_file)
-        print "student_files is now: " + str(student_files)
     hw = sub.homework
     rg = RetroGrade(settings.RETROGRADE_INSTRUCTOR_PATH,
                     hw.instructor_dir,
@@ -199,7 +199,6 @@ def do_retrograde_script(sub):
     sub.score = score
     sub.possible_score = possible
     sub.save()
-    # print pretty
 
 @login_required
 def view_specific_submission(request, hw_id, sub_id):
@@ -229,7 +228,6 @@ def view_exam(request, course_id, exam_id):
         variables['course'] = course
         variables['exam'] = exam
         if request.method == 'POST':
-            print "Got post."
             form = GradeExamForm(request.POST)
             variables['form'] = form
             if form.is_valid():
@@ -240,18 +238,28 @@ def view_exam(request, course_id, exam_id):
                 recorded_course = form.cleaned_data['course']
                 ta = form.cleaned_data['ta']
                 try:
-                    exam_result = insert_grade(exam, first, last, cu_id, score, recorded_course, ta)
-                    print "worked"
-                    variables['exam_result'] = exam_result
-                    form = GradeExamForm(initial={'course' : course})                
-                    variables['importantMessage'] = "Added score for " + first + " " + last + " = " + str(score)
-                    variables['form'] = form # reset for next go.
+
+                    students = get_all_user_matches(first, last, cu_id)
+                    if students is None or len(students) != 1:
+                        variables['importantMessage'] = "Not found or not unique"
+                        variables['disambiguate'] = students
+                    else:
+                        student = students.pop()
+                        exam_result = get_existing_exam_result(exam, student)
+                        if exam_result is not None:
+                            variables['importantMessage'] = "Already have a score. Fix in admin UI."
+                        else:
+                            exam_result = insert_grade(exam, student, score, recorded_course, ta)
+                            variables['exam_result'] = exam_result
+                            form = GradeExamForm(initial={'course' : course})                
+                            variables['importantMessage'] = "Added score for " + first + " " + last + " = " + str(score)
+                    variables['form'] = GradeExamForm() # reset for next go.
                 except Exception as ex:
+                    print ex
                     variables['importantMessage'] = "WHAT?"
             else:
                 variables['importantMessage'] = "Got invalid data."
         else:
-            print "Got non-post"
             form = GradeExamForm(initial={'course' : course})
             variables['form'] = form
 
@@ -266,15 +274,29 @@ def view_exam(request, course_id, exam_id):
 
     return render(request, 'homework/exam_all.html', variables)
 
-def insert_grade(exam, first, last, cu_id, score, recorded_course, ta):
-    retro = RetroUser.objects.get(cu_id=cu_id)
-    student = retro.user
+def get_student(first, last, sid):
+    ret = None
+    try:
+        users = get_all_user_matches(first, last, sid)
+        if len(users) == 1:
+            ret = users.pop()
+    except:
+        pass
+    return ret
+
+def get_existing_exam_result(exam, student):
+    ret = None
+    try:
+        ret = ExamResult.objects.get(exam=exam, student=student)
+    except:
+        pass
+    return ret
+    
+
+def insert_grade(exam, student, score, recorded_course, ta):
     exam_result = ExamResult()
     exam_result.exam = exam
     exam_result.student = student
-    exam_result.recorded_first_name = first
-    exam_result.recorded_last_name = last
-    exam_result.recorded_student_id = cu_id
     exam_result.score = score
     exam_result.ta = ta
     exam_result.save()

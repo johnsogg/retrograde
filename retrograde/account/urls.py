@@ -5,5 +5,6 @@ urlpatterns = patterns(
     url(r'^$', 'index'),
     url(r'^create$', 'create'),
     url(r'^logout$', 'log_out'),
+    url(r'^lookup$', 'lookup'),
 #    url(r'^(?P<hw_id>\d+)/$', 'specific'),
 )

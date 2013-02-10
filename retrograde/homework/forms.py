@@ -6,7 +6,7 @@ class GradeExamForm(forms.Form):
                                 label="First Name")
     lastName = forms.CharField(required=False,
                                label="Last Name")
-    cu_id = forms.CharField(required=True,
+    cu_id = forms.CharField(required=False,
                             label="CU Student ID")
     score = forms.IntegerField(required=True,
                                label="Score")

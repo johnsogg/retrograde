@@ -3,6 +3,12 @@
 {{ user }} | 
 <a href="/hw/course/{{user.get_profile.course.id}}">{{ user.get_profile.course }}</a> |
 <a href="/account/logout">Log Out</a>
+{% if user.is_staff %}
+|
+<a href="/account/lookup">Look up user</a>
+|
+<a href="/admin/">Admin UI</a>
+{% endif %}
 {% else %}
 <a href="/admin">Admin Interface</a> |
 <a href="/account">Log In</a>

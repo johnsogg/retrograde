@@ -1,0 +1,27 @@
+{% extends "base/index.html" %}
+
+{% block subtitle %}{% endblock subtitle%}
+
+{% block mainHeading %}{% endblock mainHeading %}
+
+{% block content %}
+<form method="post" name="lookup">
+{% csrf_token %}
+{{ form.as_p }}
+<input type="Submit" />
+</form>
+
+{% if users %}
+<h1>Results</h1>
+<table>
+{% for u in users %}
+<tr>
+  <td>{{ u.first_name }}</td>
+  <td>{{ u.last_name }}</td>
+  <td>{{ u.email }}</td>
+  <td>{{ u.get_profile.cu_id }}</td>
+</tr>
+{% endfor %}
+<table>
+{% endif %}
+{% endblock content %}
