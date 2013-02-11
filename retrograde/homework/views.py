@@ -253,7 +253,9 @@ def view_exam(request, course_id, exam_id):
                             variables['exam_result'] = exam_result
                             form = GradeExamForm(initial={'course' : course})                
                             variables['importantMessage'] = "Added score for " + student.first_name + " " + student.last_name + " = " + str(score)
-                    variables['form'] = GradeExamForm() # reset for next go.
+                    form = GradeExamForm(initial={'course' : course})
+                    
+                    variables['form'] = form
                 except Exception as ex:
                     print ex
                     variables['importantMessage'] = "WHAT?"
