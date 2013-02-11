@@ -269,10 +269,11 @@ def view_exam(request, course_id, exam_id):
         variables['all_results'] = all_results
         how_many = all_results.count()
         variables['how_many'] = how_many
-        worst = all_results.aggregate(Min('score'), Max('score'), Avg('score'))
+        worst = all_results.aggregate(Min('score'), Max('score'), Avg('score'), StdDev('score'))
         variables['worst'] = worst['score__min']
         variables['best'] = worst['score__max']
         variables['avg'] = worst['score__avg']
+        variables['std_dev'] = worst['score__stddev']
 
     return render(request, 'homework/exam_all.html', variables)
 
