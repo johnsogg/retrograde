@@ -131,4 +131,4 @@ class ExamResult(models.Model):
     ta = models.ForeignKey(TeachingAssistant, null=True)
 
     def __unicode__(self):
-        return self.student.first_name + " " + self.student.last_name + "<" + self.student.get_profile().cu_id + ">: " + str(score) + " points"
+        return self.student.first_name + " " + self.student.last_name + "<" + self.student.get_profile().cu_id + ">: " + str(self.score) + " points"
