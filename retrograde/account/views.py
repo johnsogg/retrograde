@@ -67,13 +67,7 @@ def log_user_in(request, formemail, password):
                     })
     else:
         login(request, user)
-        return render(request,
-                      'account/view-account.html', {
-                'user' : request.user,
-                'importantMessage' : 'You are logged in',
-                'course' : request.user.get_profile().course,
-                })
-
+        return index(request)
 
 def create(request):
     if request.method == 'POST': # form was submitted
