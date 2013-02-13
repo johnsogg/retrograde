@@ -5,6 +5,17 @@
 
 {% if course %}
 <p>Course: <a href="/hw/course/{{ course.id }}">{{course}}</a></p>
+
+Exams:
+{% if exams %}
+<ul>
+{% for result in exams %}
+<li>{{ result.exam.exam_date }} -- {{ result.exam.name }}: 
+{{ result.score }} / {{ result.exam.max_points}}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
 {% else %}
 <p>No course.</p>
 {% endif %}

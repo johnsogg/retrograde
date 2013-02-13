@@ -7,27 +7,29 @@ from django.forms.util import ErrorList
 from django.http import Http404, HttpResponseRedirect
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404, render
-from homework.models import Homework, Course
+from homework.models import *
 from account.forms import CreateAccountForm
 from account.forms import LogInForm
 from account.forms import LookupForm
 from django.contrib.auth.models import User
-from account.models import RetroUser
+from account.models import *
 from django.contrib.auth import authenticate, login, logout
 
 def index(request):
     if request.user.is_authenticated():
+        variables = {'user' : request.user}
         try :
-            return render(request, 
-                      'account/view-account.html', 
-                      { 'user' : request.user,
-                        'course' : request.user.get_profile().course,
-                        })
-        except:
-            return render(request, 
-                      'account/view-account.html', 
-                      { 'user' : request.user,
-                        })            
+            course = request.user.get_profile().course
+            variables['course'] = course
+            relevant_exams = Exam.objects.filter(course=course)
+            relevant_exam_results = []
+            for exam in relevant_exams:
+                relevant_exam_results.extend(ExamResult.objects.filter(exam=exam, student=request.user))
+            variables['exams'] = relevant_exam_results
+        except Exception as e:
+            pass
+        return render(request, 'account/view-account.html', variables)
+
     else:
         if request.method == 'POST':
             form = LogInForm(request.POST)
