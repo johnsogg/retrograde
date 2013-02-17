@@ -4,6 +4,7 @@ from homework.models import *
 class GradeExamForm(forms.Form):
     firstName = forms.CharField(required=False,
                                 label="First Name")
+    firstName.widget.attrs['autofocus'] = 'autofocus'
     lastName = forms.CharField(required=False,
                                label="Last Name")
     cu_id = forms.CharField(required=False,
