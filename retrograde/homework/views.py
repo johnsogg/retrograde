@@ -224,7 +224,7 @@ def view_exam(request, course_id, exam_id):
         variables['importantMessage'] = "You need to be a TA or Instructor."
     else:
         course = Course.objects.get(pk=course_id)
-        exam = Exam.objects.get(pk=exam_id)
+        exam = Exam.objects.get(pk=exam_id, course=course)
         variables['course'] = course
         variables['exam'] = exam
         if request.method == 'POST':

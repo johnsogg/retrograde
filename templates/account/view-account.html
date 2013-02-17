@@ -21,4 +21,16 @@ Exams:
 <p>No course.</p>
 {% endif %}
 
+{% if admin_info %}
+
+<ul>
+{% for course in admin_info.courses %}
+{% for exam in course.exam_set.all %}
+<li><a href="/hw/course/{{course.id}}/exam/{{exam.id}}/">{{course.course_code}} {{exam}}</a></li> 
+{% endfor %}
+{% endfor %}
+
+</ul>
+{% endif %}
+
 {% endblock content %}

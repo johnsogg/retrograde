@@ -28,6 +28,9 @@ def index(request):
             variables['exams'] = relevant_exam_results
         except Exception as e:
             pass
+        if request.user.is_staff:
+                variables['admin_info'] = get_admin_info()
+
         return render(request, 'account/view-account.html', variables)
 
     else:
@@ -168,3 +171,14 @@ def get_all_user_matches(first, last, sid):
 
 def intersect(a, b):
     return list(set(a) & set(b))
+
+def get_admin_info():
+    """ 
+    Create some administrative information: links to class summaries,
+    student summaries, exam grading, and so on. This is everything a
+    TA or instructor might need.
+    """
+    ret = {}
+    courses = Course.objects.all()
+    ret['courses'] = courses
+    return ret
