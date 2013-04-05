@@ -156,7 +156,7 @@ def set_best_scores(variables, user, hw):
     if (valc['possible_score__max'] is not None and variables['best_txt'] == valc['possible_score__max']):
         variables['best_txt_full'] = True
     best_score = max(variables['best_java'], variables['best_py'], variables['best_cpp'], variables['best_txt'])
-    sum_score = sum([variables['best_java'], variables['best_py'], variables['best_cpp'], variables['best_txt'])
+    sum_score = sum([variables['best_java'], variables['best_py'], variables['best_cpp'], variables['best_txt']])
     extra_credit_score = sum_score - best_score
     variables['normal_score'] = best_score
     variables['extra_credit_score'] = extra_credit_score
