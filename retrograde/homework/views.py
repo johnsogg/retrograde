@@ -137,6 +137,8 @@ def set_best_scores(variables, user, hw):
     valp = hw.submission_set.filter(student=user, lang='py').aggregate(Max('possible_score'))
     best_cpp = hw.submission_set.filter(student=user, lang='cpp').aggregate(Max('score'))
     valc = hw.submission_set.filter(student=user, lang='cpp').aggregate(Max('possible_score'))
+    best_txt = hw.submission_set.filter(student=user, lang='txt').aggregate(Max('score'))
+    valc = hw.submission_set.filter(student=user, lang='txt').aggregate(Max('possible_score'))
     variables['best_java'] = best_java['score__max'] or 0
     variables['best_java_full'] = False
     if (valj['possible_score__max'] is not None and variables['best_java'] == valj['possible_score__max']):
@@ -149,12 +151,16 @@ def set_best_scores(variables, user, hw):
     variables['best_cpp_full'] = False
     if (valc['possible_score__max'] is not None and variables['best_cpp'] == valc['possible_score__max']):
         variables['best_cpp_full'] = True
-    best_score = max(variables['best_java'], variables['best_py'], variables['best_cpp'])
-    sum_score = sum([variables['best_java'], variables['best_py'], variables['best_cpp']])
+    variables['best_txt'] = best_txt['score__max'] or 0
+    variables['best_txt_full'] = False
+    if (valc['possible_score__max'] is not None and variables['best_txt'] == valc['possible_score__max']):
+        variables['best_txt_full'] = True
+    best_score = max(variables['best_java'], variables['best_py'], variables['best_cpp'], variables['best_txt'])
+    sum_score = sum([variables['best_java'], variables['best_py'], variables['best_cpp'], variables['best_txt'])
     extra_credit_score = sum_score - best_score
     variables['normal_score'] = best_score
     variables['extra_credit_score'] = extra_credit_score
-    maxed_out = variables['best_java_full'] or variables['best_py_full'] or variables['best_cpp_full']
+    maxed_out = variables['best_java_full'] or variables['best_py_full'] or variables['best_cpp_full'] or variables['best_txt_full']
     variables['maxed_out'] = maxed_out
     score_set = Score.objects.filter(homework=hw, student=user)
     score = None

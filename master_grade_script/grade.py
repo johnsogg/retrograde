@@ -16,6 +16,7 @@ class RetroGrade:
     LANG_JAVA = "java"
     LANG_PYTHON = "py"
     LANG_CPP = "cpp"
+    LANG_TXT = "txt"
     # the AVOID string is a regular expression used to avoid
     # by-product files like compiler output or emacs backups
     AVOID = "|".join([ ".class$",
@@ -83,9 +84,14 @@ class RetroGrade:
             if (file.endswith(".py")):
                 self.language = RetroGrade.LANG_PYTHON
                 break
+            if (file.endswith(".txt")):
+                self.language = RetroGrade.LANG_TXT
+                break
+
         if (self.language is RetroGrade.LANG_UNKNOWN):
             self.verbose_log( "Could not determine language based on input files.")
             self.verbose_log( "Source files must end with '.java', '.py', or '.cpp'.")
+            self.verbose_log( "Text files must end with '.txt'.")
             ok = False
         else:
             self.verbose_log( "Determined language = " + self.language)

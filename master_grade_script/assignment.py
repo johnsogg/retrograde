@@ -94,7 +94,7 @@ class Assignment(object):
         else:
             self.verbose_log("Compiled OK")
 
-        if (ok):
+        if (ok and self.lang != 'txt'):
             # run the unit test
             try:
                 outfileW = open(outfile_name, "w")
@@ -120,6 +120,8 @@ class Assignment(object):
                 self.verbose_log("Done reporting result and errors.")
             except Exception as e:
                 self.verbose_log("Got Exception during unit test run: " + str(e))
+        if (ok and self.lang == 'txt'):
+            result, errors = self.full_credit()
 
         if len(result) > 0:
             # print_results(result)
@@ -131,6 +133,13 @@ class Assignment(object):
         # self.verbose_log(errors)
         self.verbose_log("Output is in the file: " + final_path)
         return (ok, result, errors, final_path, self.flaming_error)
+
+    def full_credit(self):
+        result = {}
+        errors = []
+        for k in self.points.keys():
+            result[k] = (self.points[k], self.points[k])
+        return result, ''.join(errors)
 
     def parse_for_grade(self, outfile):
         self.verbose_log("Parsing outfile...")
@@ -206,28 +215,3 @@ class Assignment(object):
         self.flushall()
         return rc
 
-
-# class ExampleAssignment(AssignmentBase):
-#     def __init__(self):
-#         super(ExampleAssignment, self).__init__()
-#         self.assignment = "Example Assignment"
-#         self.lang = "cpp"
-#         self.instructor_files = [
-#             "Makefile",
-#             "RetroPrinter.cpp",
-#             "RetroPrinter.h",
-#             "linked_list.h",
-#             "linked_list_test.cpp"
-#             ]
-#         self.student_files = [
-#             "linked_list.cpp"
-#             ]
-#         self.points = {
-#             "Report": 1,
-#             "InitNode" : 1,
-#             "InsertEmpty" : 1,
-#             "InsertStart" : 1,
-#             "InsertEnd" : 1,
-#             "InsertRedundant" : 1,
-#             "Remove" : 4,
-#             }
