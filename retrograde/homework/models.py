@@ -132,3 +132,34 @@ class ExamResult(models.Model):
 
     def __unicode__(self):
         return self.student.first_name + " " + self.student.last_name + "<" + self.student.get_profile().cu_id + ">: " + str(self.score) + " points"
+
+class ExtraCredit(models.Model):
+    student = models.ForeignKey(User)
+    score = models.IntegerField()
+    why = models.TextField()
+
+    def __unicode__(self):
+        return str(self.score) + " points for " + str(self.student) + ". Reason: " + str(self.why)
+
+class Grade(models.Model):
+    student = models.ForeignKey(User)
+    score_hw = models.IntegerField()
+    score_exam = models.IntegerField()
+    score_extra = models.IntegerField()
+    score_final = models.IntegerField()
+    grade = models.CharField(max_length=2)
+    remark = models.TextField()
+
+    def __unicode__(self):
+        return self.student.last_name + "\t" + \
+            self.student.first_name + "\t" + \
+            self.student.get_profile().cu_id + "\t" + \
+            self.student.email + "\t" + \
+            str(self.score_hw) + "\t" + \
+            str(self.score_exam) + "\t" + \
+            str(self.score_extra) + "\t" + \
+            str(self.score_final) + "\t" + \
+            str(self.grade) + "\t" + \
+            str(self.remark);
+
+
