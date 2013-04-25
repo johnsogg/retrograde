@@ -147,6 +147,7 @@ class Grade(models.Model):
     score_exam = models.IntegerField()
     score_extra = models.IntegerField()
     score_final = models.IntegerField()
+    course = models.ForeignKey(Course)
     grade = models.CharField(max_length=2)
     remark = models.TextField()
 
