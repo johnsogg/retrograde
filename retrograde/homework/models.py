@@ -152,7 +152,8 @@ class Grade(models.Model):
     remark = models.TextField()
 
     def __unicode__(self):
-        return self.student.last_name + "\t" + \
+        return self.course.course_code + "\t" + \
+            self.student.last_name + "\t" + \
             self.student.first_name + "\t" + \
             self.student.get_profile().cu_id + "\t" + \
             self.student.email + "\t" + \
