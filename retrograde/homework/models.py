@@ -20,6 +20,13 @@ class TeachingAssistant(models.Model):
     def __unicode__(self):
         return self.name
 
+class Project(models.Model):
+    student = models.ForeignKey(User)
+    grade = models.CharField(max_length=4)
+
+    def __unicode__(self):
+        return "Project: " + str(self.grade)
+
 class Homework(models.Model):
     name = models.CharField(max_length=100, 
                             help_text='Human-readable name of assignment')
